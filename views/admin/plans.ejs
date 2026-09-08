@@ -1,0 +1,142 @@
+<%- include('../partials/header') %>
+<%- include('../partials/admin_sidebar') %>
+
+<div class="main-content">
+    <%- include('../partials/topbar') %>
+
+    <main class="page-body">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+            <div>
+                <h4 class="fw-bold mb-1">Storage Tier Management</h4>
+                <p class="text-muted small mb-0">Configure commercial storage quotas, per-file limits, and subscription pricing.</p>
+            </div>
+            <button type="button" class="btn btn-primary" onclick="openNewPlanModal()">
+                <i class="bi bi-plus-circle me-1"></i> Add Storage Plan
+            </button>
+        </div>
+
+        <div class="row g-4">
+            <% plans.forEach(plan => { %>
+                <div class="col-md-6 col-lg-4">
+                    <div class="card card-custom h-100 p-4 border">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h5 class="fw-bold mb-1"><%= plan.plan_name %></h5>
+                                <span class="badge bg-primary-subtle text-primary text-capitalize"><%= plan.billing_cycle || 'monthly' %> tier</span>
+                            </div>
+                            <span class="badge bg-success-subtle text-success fs-6 fw-bold">$<%= plan.price.toFixed(2) %></span>
+                        </div>
+
+                        <div class="p-3 bg-body-secondary rounded mb-3">
+                            <div class="d-flex justify-content-between small text-muted mb-1">
+                                <span>Total Storage:</span>
+                                <strong class="text-dark"><%= formatBytes(plan.storage_bytes) %></strong>
+                            </div>
+                            <div class="d-flex justify-content-between small text-muted mb-1">
+                                <span>Max File Size:</span>
+                                <strong class="text-dark"><%= formatBytes(plan.max_file_size) %></strong>
+                            </div>
+                            <div class="d-flex justify-content-between small text-muted">
+                                <span>Subscribed Users:</span>
+                                <span class="badge bg-primary rounded-pill"><%= plan.subscriber_count %> users</span>
+                            </div>
+                        </div>
+
+                        <p class="small text-secondary mb-4"><%= plan.description || 'Secure cloud storage allocation.' %></p>
+
+                        <div class="mt-auto">
+                            <button type="button" class="btn btn-outline-primary btn-sm w-100" data-plan-id="<%= plan._id %>" data-plan-name="<%= plan.plan_name %>" data-storage-mb="<%= Math.round(plan.storage_bytes / (1024 * 1024)) %>" data-price="<%= plan.price %>" data-cycle="<%= plan.billing_cycle %>" data-desc="<%= plan.description || '' %>" data-max-file-mb="<%= Math.round(plan.max_file_size / (1024 * 1024)) %>" onclick="openEditPlanModal(this.dataset.planId, this.dataset.planName, this.dataset.storageMb, this.dataset.price, this.dataset.cycle, this.dataset.desc, this.dataset.maxFileMb)">
+                                <i class="bi bi-pencil-square me-1"></i> Edit Plan Config
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            <% }) %>
+        </div>
+    </main>
+</div>
+
+<!-- Add / Edit Plan Modal -->
+<div class="modal fade" id="planModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold" id="planModalTitle"><i class="bi bi-cloud-plus text-primary me-2"></i>Storage Plan</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="/admin/plans/save">
+                <input type="hidden" name="plan_id" id="modalPlanId">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Plan Name</label>
+                        <input type="text" name="plan_name" id="modalPlanName" class="form-control" placeholder="e.g. Pro Developer Plan" required>
+                    </div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">Storage Quota (MB)</label>
+                            <input type="number" name="storage_mb" id="modalPlanStorageMb" class="form-control" placeholder="e.g. 5120 for 5GB" min="10" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">Max File Upload (MB)</label>
+                            <input type="number" name="max_file_mb" id="modalPlanMaxFileMb" class="form-control" placeholder="e.g. 50" min="1" required>
+                        </div>
+                    </div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">Price ($ USD)</label>
+                            <input type="number" name="price" id="modalPlanPrice" class="form-control" step="0.01" min="0" placeholder="e.g. 9.99" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">Billing Frequency</label>
+                            <select name="billing_cycle" id="modalPlanCycle" class="form-select">
+                                <option value="monthly">Monthly</option>
+                                <option value="yearly">Yearly</option>
+                                <option value="lifetime">Lifetime</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Plan Description</label>
+                        <textarea name="description" id="modalPlanDesc" class="form-control" rows="3" placeholder="Features and summary of this tier..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-sm">Save Plan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function openNewPlanModal() {
+    document.getElementById('planModalTitle').innerText = 'Add New Storage Plan';
+    document.getElementById('modalPlanId').value = '';
+    document.getElementById('modalPlanName').value = '';
+    document.getElementById('modalPlanStorageMb').value = '2048';
+    document.getElementById('modalPlanMaxFileMb').value = '50';
+    document.getElementById('modalPlanPrice').value = '4.99';
+    document.getElementById('modalPlanCycle').value = 'monthly';
+    document.getElementById('modalPlanDesc').value = '';
+
+    const modal = new bootstrap.Modal(document.getElementById('planModal'));
+    modal.show();
+}
+
+function openEditPlanModal(id, name, mb, price, cycle, desc, maxFileMb) {
+    document.getElementById('planModalTitle').innerText = 'Edit Storage Plan';
+    document.getElementById('modalPlanId').value = id;
+    document.getElementById('modalPlanName').value = name;
+    document.getElementById('modalPlanStorageMb').value = mb;
+    document.getElementById('modalPlanMaxFileMb').value = maxFileMb || '50';
+    document.getElementById('modalPlanPrice').value = price;
+    document.getElementById('modalPlanCycle').value = cycle || 'monthly';
+    document.getElementById('modalPlanDesc').value = desc;
+
+    const modal = new bootstrap.Modal(document.getElementById('planModal'));
+    modal.show();
+}
+</script>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,207 @@
+<!-- ==================== 1. File Preview Modal ==================== -->
+<div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-truncate" id="previewModalTitle">File Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="previewModalBody">
+                <!-- Loaded via AJAX -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="#" id="previewModalDownloadBtn" class="btn btn-primary">
+                    <i class="bi bi-download me-1"></i> Download
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== 2. File Share Modal ==================== -->
+<div class="modal fade" id="shareModal" tabindex="-1" aria-labelledby="shareModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="shareModalTitle"><i class="bi bi-share text-primary me-2"></i>Share File</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted small mb-3">Sharing: <strong id="shareModalFileName" class="text-primary"></strong></p>
+
+                <form id="shareForm" method="POST" action="/shared/create">
+                    <input type="hidden" name="file_id" id="shareFileId" value="">
+
+                    <!-- Share Type -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Share Method</label>
+                        <div class="d-flex gap-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="share_type" id="shareTypeUser" value="user" checked onchange="toggleShareMethod()">
+                                <label class="form-check-label" for="shareTypeUser">Direct User Email</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="share_type" id="shareTypeLink" value="link" onchange="toggleShareMethod()">
+                                <label class="form-check-label" for="shareTypeLink">Public Signed Link</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- User Email -->
+                    <div id="userShareSection" class="mb-3">
+                        <label for="shareEmail" class="form-label">Recipient Email Address</label>
+                        <input type="email" class="form-control" name="recipient_email" id="shareEmail" placeholder="e.g. colleague@filestorage.local">
+                        <div class="form-text">User must be a registered member.</div>
+                    </div>
+
+                    <!-- Permission -->
+                    <div class="mb-3">
+                        <label for="sharePermission" class="form-label">Access Permission Level</label>
+                        <select class="form-select" name="permission" id="sharePermission">
+                            <option value="download">Allow View & Download</option>
+                            <option value="no-download">View Only (No Download)</option>
+                            <option value="edit">Editor (Read & Modify)</option>
+                        </select>
+                    </div>
+
+                    <!-- Link Protection Options -->
+                    <div id="linkOptionsSection" class="d-none">
+                        <div class="mb-3">
+                            <label for="accessPassword" class="form-label">Optional Passcode Protection</label>
+                            <input type="password" class="form-control" name="access_password" id="accessPassword" placeholder="Leave blank for open link">
+                        </div>
+                        <div class="mb-3">
+                            <label for="expiryDays" class="form-label">Link Expiration</label>
+                            <select class="form-select" name="expiry_days" id="expiryDays">
+                                <option value="never">Never Expires</option>
+                                <option value="1">1 Day</option>
+                                <option value="7" selected>7 Days</option>
+                                <option value="30">30 Days</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer px-0 pb-0 mt-3">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="submitShareBtn">
+                            <i class="bi bi-send me-1"></i> Create Share
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== 3. New Folder Modal ==================== -->
+<div class="modal fade" id="newFolderModal" tabindex="-1" aria-labelledby="newFolderModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="POST" action="/folders/create">
+                <input type="hidden" name="parent_id" value="<%= typeof currentFolder !== 'undefined' && currentFolder ? currentFolder._id : '' %>">
+
+                <div class="modal-header">
+                    <h5 class="modal-title" id="newFolderModalTitle"><i class="bi bi-folder-plus text-primary me-2"></i>Create New Folder</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="folderName" class="form-label fw-semibold">Folder Name</label>
+                        <input type="text" class="form-control" name="folder_name" id="folderName" placeholder="e.g. Research Assets" required autofocus>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Folder Color Tag</label>
+                        <div class="d-flex gap-2">
+                            <label class="btn btn-outline-primary p-2 active"><input type="radio" name="color_code" value="#3b82f6" checked class="d-none"> <i class="bi bi-circle-fill text-primary"></i></label>
+                            <label class="btn btn-outline-success p-2"><input type="radio" name="color_code" value="#10b981" class="d-none"> <i class="bi bi-circle-fill text-success"></i></label>
+                            <label class="btn btn-outline-warning p-2"><input type="radio" name="color_code" value="#f59e0b" class="d-none"> <i class="bi bi-circle-fill text-warning"></i></label>
+                            <label class="btn btn-outline-danger p-2"><input type="radio" name="color_code" value="#ef4444" class="d-none"> <i class="bi bi-circle-fill text-danger"></i></label>
+                            <label class="btn btn-outline-info p-2"><input type="radio" name="color_code" value="#06b6d4" class="d-none"> <i class="bi bi-circle-fill text-info"></i></label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i> Create Folder</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== 4. Rename File Modal ==================== -->
+<div class="modal fade" id="renameModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="POST" action="/files/rename">
+                <input type="hidden" name="file_id" id="renameFileId" value="">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-pencil-square text-primary me-2"></i>Rename File</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">New File Name</label>
+                        <input type="text" class="form-control" name="new_name" id="renameFileName" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-save me-1"></i> Rename</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== 5. Move File Modal ==================== -->
+<div class="modal fade" id="moveModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="POST" action="/files/move">
+                <input type="hidden" name="file_id" id="moveFileId" value="">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-folder-symlink text-primary me-2"></i>Move File</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small">Move file: <strong id="moveModalFileName" class="text-primary"></strong></p>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Destination Folder</label>
+                        <select class="form-select" name="target_folder_id" id="targetFolderSelect">
+                            <option value="root">Root Storage</option>
+                            <% if (typeof allUserFolders !== 'undefined' && allUserFolders) { %>
+                                <% allUserFolders.forEach(f => { %>
+                                    <option value="<%= f._id %>"><%= f.folder_name %></option>
+                                <% }) %>
+                            <% } %>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check2-circle me-1"></i> Move File</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleShareMethod() {
+    const isLink = document.getElementById('shareTypeLink').checked;
+    const userSec = document.getElementById('userShareSection');
+    const linkSec = document.getElementById('linkOptionsSection');
+    
+    if (isLink) {
+        userSec.classList.add('d-none');
+        linkSec.classList.remove('d-none');
+        document.getElementById('shareEmail').removeAttribute('required');
+    } else {
+        userSec.classList.remove('d-none');
+        linkSec.classList.add('d-none');
+        document.getElementById('shareEmail').setAttribute('required', 'required');
+    }
+}
+</script>

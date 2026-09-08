@@ -1,0 +1,84 @@
+<% 
+  const storageUsed = (user && user.storage_used_bytes) || 0;
+  const storageLimit = (user && user.storage_limit_bytes) || 524288000;
+  const storagePercent = storageLimit > 0 ? Number(((storageUsed / storageLimit) * 100).toFixed(1)) : 0;
+  const planName = (user && user.storage_plan && user.storage_plan.plan_name) || 'Free Starter';
+%>
+<aside class="sidebar">
+    <!-- Brand -->
+    <a href="/dashboard" class="sidebar-brand">
+        <i class="bi bi-shield-lock-fill me-2 fs-4"></i>
+        <span><%= appName %></span>
+    </a>
+
+    <!-- Nav Items -->
+    <nav class="sidebar-nav">
+        <div class="sidebar-heading">Main</div>
+        <a href="/dashboard" class="nav-link <%= currentUrl === '/dashboard' ? 'active' : '' %>">
+            <i class="bi bi-grid-1x2-fill"></i>
+            <span>Dashboard</span>
+        </a>
+
+        <div class="sidebar-heading">File Management</div>
+        <a href="/files" class="nav-link <%= currentUrl.startsWith('/files') ? 'active' : '' %>">
+            <i class="bi bi-folder2-open"></i>
+            <span>My Files</span>
+        </a>
+        <a href="/folders" class="nav-link <%= currentUrl.startsWith('/folders') ? 'active' : '' %>">
+            <i class="bi bi-folder-symlink"></i>
+            <span>Folders</span>
+        </a>
+        <a href="/shared" class="nav-link <%= currentUrl.startsWith('/shared') ? 'active' : '' %>">
+            <i class="bi bi-share-fill"></i>
+            <span>Shared Files</span>
+        </a>
+        <a href="/recycle-bin" class="nav-link <%= currentUrl === '/recycle-bin' ? 'active' : '' %>">
+            <i class="bi bi-trash3-fill"></i>
+            <span>Recycle Bin</span>
+        </a>
+
+        <div class="sidebar-heading">Account & Billing</div>
+        <a href="/storage-plans" class="nav-link <%= currentUrl === '/storage-plans' || currentUrl.startsWith('/checkout') ? 'active' : '' %>">
+            <i class="bi bi-hdd-stack-fill"></i>
+            <span>Storage Plans</span>
+        </a>
+        <a href="/payment-history" class="nav-link <%= currentUrl === '/payment-history' ? 'active' : '' %>">
+            <i class="bi bi-receipt-cutoff"></i>
+            <span>Billing History</span>
+        </a>
+        <a href="/activity-logs" class="nav-link <%= currentUrl === '/activity-logs' ? 'active' : '' %>">
+            <i class="bi bi-shield-shaded"></i>
+            <span>Activity Logs</span>
+        </a>
+        <a href="/support" class="nav-link <%= currentUrl.startsWith('/support') ? 'active' : '' %>">
+            <i class="bi bi-headset"></i>
+            <span>Support Desk</span>
+        </a>
+        <a href="/profile" class="nav-link <%= currentUrl === '/profile' ? 'active' : '' %>">
+            <i class="bi bi-person-gear"></i>
+            <span>Settings</span>
+        </a>
+    </nav>
+
+    <!-- Storage Usage Meter Widget -->
+    <div class="sidebar-storage-card">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="small fw-semibold">Storage Used</span>
+            <span class="badge bg-primary-subtle text-primary small"><%= planName %></span>
+        </div>
+        <div class="progress mb-2" style="height: 6px;">
+            <div class="progress-bar <%= storagePercent >= 80 ? (storagePercent >= 100 ? 'bg-danger' : 'bg-warning') : 'bg-primary' %>" 
+                 role="progressbar" 
+                 style="width: <%= Math.min(100, storagePercent) %>%;" 
+                 aria-valuenow="<%= storagePercent %>" 
+                 aria-valuemin="0" 
+                 aria-valuemax="100"></div>
+        </div>
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <small class="text-muted" style="font-size: 0.75rem;"><%= storagePercent %>%</small>
+        </div>
+        <a href="/storage-plans" class="btn btn-sm btn-primary w-100 py-1" style="font-size: 0.78rem;">
+            <i class="bi bi-arrow-up-circle me-1"></i> Upgrade Storage
+        </a>
+    </div>
+</aside>

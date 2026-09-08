@@ -1,0 +1,85 @@
+<%- include('../partials/header') %>
+<%- include('../partials/admin_sidebar') %>
+
+<div class="main-content">
+    <%- include('../partials/topbar') %>
+
+    <main class="page-body">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+            <div>
+                <h4 class="fw-bold mb-1">System Forensic & Security Audit Logs</h4>
+                <p class="text-muted small mb-0">Immutable tracking of user authentication, encryption/decryption cycles, permissions, and administrative changes.</p>
+            </div>
+            <div class="d-flex gap-2">
+                <input type="text" id="adminLogFilterInput" class="form-control form-control-sm" placeholder="Filter audit trail..." style="max-width: 250px;" onkeyup="filterAdminLogs()">
+            </div>
+        </div>
+
+        <div class="card card-custom p-4">
+            <% if (!logs || logs.length === 0) { %>
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-shield-check display-4 d-block mb-2 text-success"></i>
+                    <h6 class="fw-semibold">No system logs found</h6>
+                </div>
+            <% } else { %>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0" id="adminLogsTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th>User</th>
+                                <th>Action Event</th>
+                                <th>Event Details</th>
+                                <th>Target Category</th>
+                                <th>IP Address</th>
+                                <th>Timestamp</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% logs.forEach(log => { 
+                                let badgeClass = 'bg-primary-subtle text-primary';
+                                if (log.action_type.includes('DELETE') || log.action_type.includes('PURGE')) badgeClass = 'bg-danger-subtle text-danger';
+                                else if (log.action_type.includes('LOGIN') || log.action_type.includes('REGISTER')) badgeClass = 'bg-success-subtle text-success';
+                                else if (log.action_type.includes('ADMIN')) badgeClass = 'bg-dark-subtle text-dark border';
+                                else if (log.action_type.includes('SHARE')) badgeClass = 'bg-warning-subtle text-warning';
+                            %>
+                                <tr>
+                                    <td>
+                                        <div class="fw-semibold text-dark"><%= log.user ? log.user.full_name : 'System / Guest' %></div>
+                                        <small class="text-muted"><%= log.user ? log.user.email : 'N/A' %></small>
+                                    </td>
+                                    <td>
+                                        <span class="badge <%= badgeClass %> font-monospace"><%= log.action_type %></span>
+                                    </td>
+                                    <td>
+                                        <div class="text-dark small"><%= log.description %></div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-body-secondary text-secondary text-uppercase" style="font-size: 0.68rem;"><%= log.target_type %></span>
+                                    </td>
+                                    <td class="small font-monospace text-muted"><%= log.ip_address || '127.0.0.1' %></td>
+                                    <td class="small text-muted">
+                                        <div><%= new Date(log.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %></div>
+                                        <small class="text-muted"><%= new Date(log.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) %> (<%= timeAgo(log.createdAt) %>)</small>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            <% } %>
+        </div>
+    </main>
+</div>
+
+<script>
+function filterAdminLogs() {
+    const q = document.getElementById('adminLogFilterInput').value.toLowerCase();
+    const rows = document.querySelectorAll('#adminLogsTable tbody tr');
+    rows.forEach(r => {
+        const txt = r.innerText.toLowerCase();
+        r.style.display = txt.includes(q) ? '' : 'none';
+    });
+}
+</script>
+
+<%- include('../partials/footer') %>

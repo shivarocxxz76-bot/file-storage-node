@@ -1,0 +1,181 @@
+<%- include('../partials/header') %>
+<%- include('../partials/sidebar') %>
+
+<div class="main-content">
+    <%- include('../partials/topbar') %>
+
+    <main class="page-body">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-2">
+            <div>
+                <h4 class="fw-bold mb-1">Billing & Invoices</h4>
+                <p class="text-muted small mb-0">Review all your storage subscription transactions and download receipts.</p>
+            </div>
+            <a href="/storage-plans" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-arrow-up-circle me-1"></i> Upgrade Storage
+            </a>
+        </div>
+
+        <div class="card card-custom p-4">
+            <% if (!payments || payments.length === 0) { %>
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-receipt-cutoff display-4 d-block mb-3 text-secondary"></i>
+                    <h6 class="fw-semibold">No transactions found</h6>
+                    <p class="small text-muted mb-3">You have not made any plan purchases or upgrades yet.</p>
+                    <a href="/storage-plans" class="btn btn-primary btn-sm">Browse Storage Plans</a>
+                </div>
+            <% } else { %>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Transaction ID</th>
+                                <th>Plan</th>
+                                <th>Method</th>
+                                <th>Amount</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th class="text-end">Invoice</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% payments.forEach(payment => { %>
+                                <tr>
+                                    <td>
+                                        <span class="font-monospace fw-semibold text-primary"><%= payment.transaction_id %></span>
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold"><%= payment.plan ? payment.plan.plan_name : 'Custom Plan' %></div>
+                                        <small class="text-muted"><%= payment.plan ? formatBytes(payment.plan.storage_bytes) : '' %></small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-body-secondary text-uppercase border text-secondary">
+                                            <i class="bi bi-credit-card me-1"></i><%= payment.payment_method %>
+                                        </span>
+                                    </td>
+                                    <td class="fw-bold text-dark">$<%= payment.amount.toFixed(2) %></td>
+                                    <td class="small text-muted"><%= new Date(payment.payment_date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) %></td>
+                                    <td>
+                                        <% if (payment.status === 'completed') { %>
+                                            <span class="badge bg-success-subtle text-success">Completed</span>
+                                        <% } else if (payment.status === 'pending') { %>
+                                            <span class="badge bg-warning-subtle text-warning">Pending</span>
+                                        <% } else { %>
+                                            <span class="badge bg-danger-subtle text-danger"><%= payment.status %></span>
+                                        <% } %>
+                                    </td>
+                                    <td class="text-end">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="viewInvoice('<%= payment.transaction_id %>', '<%= payment.plan ? payment.plan.plan_name : `Plan` %>', '<%= payment.amount.toFixed(2) %>', '<%= payment.payment_method.toUpperCase() %>', '<%= new Date(payment.payment_date).toLocaleString() %>')">
+                                            <i class="bi bi-file-earmark-pdf me-1"></i> View Receipt
+                                        </button>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            <% } %>
+        </div>
+    </main>
+</div>
+
+<!-- Printable Invoice Modal -->
+<div class="modal fade" id="invoiceModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4" id="printableReceiptArea">
+                <div class="d-flex justify-content-between align-items-start border-bottom pb-4 mb-4">
+                    <div>
+                        <h4 class="fw-bold text-primary mb-1"><i class="bi bi-shield-lock-fill me-2"></i>SecureVault Cloud</h4>
+                        <p class="text-muted small mb-0">Official Subscription Receipt & Tax Invoice</p>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge bg-success fs-6 px-3 py-1 mb-1">PAID (DEMO)</span>
+                        <div class="text-muted small">Issued to: <strong><%= user ? user.full_name : '' %></strong></div>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-sm-6">
+                        <div class="text-muted small">Transaction ID:</div>
+                        <div class="fw-bold font-monospace" id="modalTxnId">TXN-0000</div>
+                        <div class="text-muted small mt-2">Payment Method:</div>
+                        <div class="fw-semibold" id="modalMethod">CARD</div>
+                    </div>
+                    <div class="col-sm-6 text-sm-end">
+                        <div class="text-muted small">Payment Date & Time:</div>
+                        <div class="fw-semibold" id="modalDate">---</div>
+                        <div class="text-muted small mt-2">Billed To:</div>
+                        <div class="fw-semibold"><%= user ? user.email : '' %></div>
+                    </div>
+                </div>
+
+                <table class="table table-bordered mb-4">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Item Description</th>
+                            <th class="text-center">Qty</th>
+                            <th class="text-end">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <strong id="modalPlanName">Cloud Storage Plan</strong>
+                                <div class="small text-muted">AES-256 Cloud Storage Allocation Quota</div>
+                            </td>
+                            <td class="text-center">1</td>
+                            <td class="text-end fw-bold" id="modalAmount">$0.00</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="d-flex justify-content-end">
+                    <div style="min-width: 200px;">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-muted small">Subtotal:</span>
+                            <span class="fw-semibold" id="modalSubtotal">$0.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted small">Tax (0%):</span>
+                            <span class="fw-semibold">$0.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between border-top pt-2">
+                            <span class="fw-bold">Total Paid:</span>
+                            <span class="fs-5 fw-bold text-primary" id="modalTotal">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center text-muted small mt-5 pt-3 border-top">
+                    Thank you for choosing SecureVault Cloud. This is a simulated academic final-year project invoice.
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary btn-sm" onclick="window.print()">
+                    <i class="bi bi-printer me-1"></i> Print Invoice
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function viewInvoice(txnId, planName, amount, method, dateStr) {
+    document.getElementById('modalTxnId').innerText = txnId;
+    document.getElementById('modalPlanName').innerText = planName + ' Subscription';
+    document.getElementById('modalAmount').innerText = '$' + amount;
+    document.getElementById('modalSubtotal').innerText = '$' + amount;
+    document.getElementById('modalTotal').innerText = '$' + amount;
+    document.getElementById('modalMethod').innerText = method;
+    document.getElementById('modalDate').innerText = dateStr;
+
+    const modal = new bootstrap.Modal(document.getElementById('invoiceModal'));
+    modal.show();
+}
+</script>
+
+<%- include('../partials/footer') %>

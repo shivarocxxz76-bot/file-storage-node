@@ -1,0 +1,117 @@
+/**
+ * Main Application Script: Theme Toggle, Mobile Nav, Toast & Utilities
+ */
+
+document.addEventListener('DOMContentLoaded', () => {
+    // ---------------- Dark Mode Toggle & Persistence ----------------
+    const themeToggleBtn = document.getElementById('themeToggleBtn');
+    const htmlElement = document.documentElement;
+
+    const savedTheme = localStorage.getItem('sv_theme') || 
+                       (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    setTheme(savedTheme);
+
+    if (themeToggleBtn) {
+        themeToggleBtn.addEventListener('click', () => {
+            const currentTheme = htmlElement.getAttribute('data-bs-theme') || 'light';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            setTheme(newTheme);
+            localStorage.setItem('sv_theme', newTheme);
+        });
+    }
+
+    function setTheme(theme) {
+        htmlElement.setAttribute('data-bs-theme', theme);
+        if (themeToggleBtn) {
+            const icon = themeToggleBtn.querySelector('i');
+            if (icon) {
+                if (theme === 'dark') {
+                    icon.className = 'bi bi-sun-fill text-warning';
+                } else {
+                    icon.className = 'bi bi-moon-stars-fill text-secondary';
+                }
+            }
+        }
+    }
+
+    // ---------------- Mobile Sidebar Toggle ----------------
+    const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
+    const sidebar = document.querySelector('.sidebar');
+
+    if (sidebarToggleBtn && sidebar) {
+        sidebarToggleBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            sidebar.classList.toggle('show');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth < 992 && sidebar.classList.contains('show')) {
+                if (!sidebar.contains(e.target) && e.target !== sidebarToggleBtn) {
+                    sidebar.classList.remove('show');
+                }
+            }
+        });
+    }
+
+    // ---------------- Auto-dismiss Alert Messages ----------------
+    const alerts = document.querySelectorAll('.alert-auto-dismiss');
+    alerts.forEach(alert => {
+        setTimeout(() => {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        }, 5000);
+    });
+
+    // ---------------- Live Search Filter ----------------
+    const liveSearchInput = document.getElementById('liveSearchInput');
+    if (liveSearchInput) {
+        liveSearchInput.addEventListener('keyup', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            const searchableItems = document.querySelectorAll('.searchable-item');
+            
+            searchableItems.forEach(item => {
+                const text = item.getAttribute('data-search') || item.textContent.toLowerCase();
+                if (text.toLowerCase().includes(query)) {
+                    item.style.display = '';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+    }
+});
+
+// Global Toast Notification Helper
+function showToast(message, type = 'info') {
+    let toastContainer = document.getElementById('toastContainer');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toastContainer';
+        toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+        toastContainer.style.zIndex = '1090';
+        document.body.appendChild(toastContainer);
+    }
+
+    const toastId = 'toast_' + Date.now();
+    const bgClass = type === 'success' ? 'bg-success text-white' : 
+                    type === 'danger' ? 'bg-danger text-white' : 
+                    type === 'warning' ? 'bg-warning text-dark' : 'bg-primary text-white';
+
+    const toastHtml = `
+        <div id="${toastId}" class="toast align-items-center ${bgClass} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">${message}</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    `;
+
+    toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+    const toastEl = document.getElementById(toastId);
+    const toast = new bootstrap.Toast(toastEl, { delay: 4000 });
+    toast.show();
+
+    toastEl.addEventListener('hidden.bs.toast', () => {
+        toastEl.remove();
+    });
+}

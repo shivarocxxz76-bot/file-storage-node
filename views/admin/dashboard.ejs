@@ -1,0 +1,194 @@
+<%- include('../partials/header') %>
+<%- include('../partials/admin_sidebar') %>
+
+<div class="main-content">
+    <%- include('../partials/topbar') %>
+
+    <main class="page-body">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+            <div>
+                <h4 class="fw-bold mb-1">Administrative Control Center 🛡️</h4>
+                <p class="text-muted small mb-0">Platform overview, system health, revenue performance, and security monitoring.</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="/admin/users" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-people me-1"></i> Manage Users
+                </a>
+                <a href="/admin/files" class="btn btn-primary btn-sm">
+                    <i class="bi bi-shield-shaded me-1"></i> File Moderation
+                </a>
+            </div>
+        </div>
+
+        <!-- KPI Statistic Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-lg-3">
+                <div class="card card-custom stat-card">
+                    <div>
+                        <div class="text-muted small fw-medium mb-1">Total Users</div>
+                        <h3 class="fw-bold mb-0"><%= totalUsers %></h3>
+                    </div>
+                    <div class="stat-icon primary">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="card card-custom stat-card">
+                    <div>
+                        <div class="text-muted small fw-medium mb-1">Encrypted Files</div>
+                        <h3 class="fw-bold mb-0"><%= totalFiles %></h3>
+                    </div>
+                    <div class="stat-icon info">
+                        <i class="bi bi-file-earmark-lock2-fill"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="card card-custom stat-card">
+                    <div>
+                        <div class="text-muted small fw-medium mb-1">Total Vault Storage</div>
+                        <h3 class="fw-bold mb-0 text-truncate" style="font-size: 1.35rem;"><%= totalStorageFormatted %></h3>
+                    </div>
+                    <div class="stat-icon warning">
+                        <i class="bi bi-hdd-network-fill"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="card card-custom stat-card">
+                    <div>
+                        <div class="text-muted small fw-medium mb-1">Revenue (Demo)</div>
+                        <h3 class="fw-bold mb-0 text-success">$<%= totalRevenue %></h3>
+                    </div>
+                    <div class="stat-icon success">
+                        <i class="bi bi-currency-dollar"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="row g-4 mb-4">
+            <div class="col-lg-6">
+                <div class="card card-custom p-4 h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="fw-bold mb-0"><i class="bi bi-bar-chart text-primary me-2"></i>File Upload Activity (2026)</h6>
+                        <span class="badge bg-primary-subtle text-primary">Monthly Trend</span>
+                    </div>
+                    <div style="height: 250px; position: relative;">
+                        <canvas id="adminUploadsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card card-custom p-4 h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="fw-bold mb-0"><i class="bi bi-graph-up-arrow text-success me-2"></i>Revenue Growth ($)</h6>
+                        <span class="badge bg-success-subtle text-success">Demo Ledger</span>
+                    </div>
+                    <div style="height: 250px; position: relative;">
+                        <canvas id="adminRevenueChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Users & Transactions Tables -->
+        <div class="row g-4">
+            <!-- Recent Users -->
+            <div class="col-lg-6">
+                <div class="card card-custom p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="fw-bold mb-0"><i class="bi bi-person-plus text-primary me-2"></i>Recently Registered Users</h6>
+                        <a href="/admin/users" class="small text-primary text-decoration-none fw-semibold">View All &rarr;</a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>User</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
+                                    <th>Joined</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% recentUsers.forEach(u => { %>
+                                    <tr>
+                                        <td>
+                                            <div class="fw-semibold text-dark"><%= u.full_name %></div>
+                                            <div class="small text-muted"><%= u.email %></div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-body-secondary text-uppercase border text-secondary"><%= u.role %></span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-<%= u.status === 'active' ? 'success' : 'danger' %>-subtle text-<%= u.status === 'active' ? 'success' : 'danger' %> text-capitalize">
+                                                <%= u.status %>
+                                            </span>
+                                        </td>
+                                        <td class="small text-muted"><%= timeAgo(u.createdAt) %></td>
+                                    </tr>
+                                <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Payments -->
+            <div class="col-lg-6">
+                <div class="card card-custom p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="fw-bold mb-0"><i class="bi bi-cash-stack text-success me-2"></i>Latest Demo Transactions</h6>
+                        <a href="/admin/payments" class="small text-primary text-decoration-none fw-semibold">Ledger &rarr;</a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>User</th>
+                                    <th>Plan</th>
+                                    <th>Amount</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% if (!recentPayments || recentPayments.length === 0) { %>
+                                    <tr><td colspan="4" class="text-center text-muted py-3">No payments recorded yet.</td></tr>
+                                <% } else { %>
+                                    <% recentPayments.forEach(p => { %>
+                                        <tr>
+                                            <td>
+                                                <div class="fw-semibold text-dark"><%= p.user ? p.user.full_name : 'Deleted User' %></div>
+                                                <div class="small font-monospace text-muted"><%= p.transaction_id %></div>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-primary-subtle text-primary"><%= p.plan ? p.plan.plan_name : 'Upgrade' %></span>
+                                            </td>
+                                            <td class="fw-bold text-success">$<%= p.amount.toFixed(2) %></td>
+                                            <td class="small text-muted"><%= timeAgo(p.payment_date) %></td>
+                                        </tr>
+                                    <% }) %>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const uploadData = <%- JSON.stringify(monthlyUploadsData) %>;
+    const revenueData = <%- JSON.stringify(revenueData) %>;
+
+    renderAdminUploadsChart('adminUploadsChart', uploadData);
+    renderAdminRevenueChart('adminRevenueChart', revenueData);
+});
+</script>
+
+<%- include('../partials/footer') %>

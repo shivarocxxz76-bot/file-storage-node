@@ -1,0 +1,70 @@
+<%- include('../partials/header') %>
+<%- include('../partials/sidebar') %>
+
+<div class="main-content">
+    <%- include('../partials/topbar') %>
+
+    <main class="page-body">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-2">
+            <div>
+                <h4 class="fw-bold mb-1">Notification Center</h4>
+                <p class="text-muted small mb-0">System alerts, file share invites, storage limit notifications, and support ticket updates.</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="/notifications?mark_all_read=1" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-check2-all me-1"></i> Mark All as Read
+                </a>
+                <a href="/notifications?clear_all=1" class="btn btn-outline-secondary btn-sm" onclick="return confirm('Clear all notifications?')">
+                    <i class="bi bi-trash3 me-1"></i> Clear All
+                </a>
+            </div>
+        </div>
+
+        <div class="card card-custom">
+            <% if (!notifications || notifications.length === 0) { %>
+                <div class="text-center py-5 text-muted p-4">
+                    <i class="bi bi-bell-slash display-4 d-block mb-2 text-secondary"></i>
+                    <h6 class="fw-semibold">All caught up!</h6>
+                    <p class="small text-muted mb-0">You have no unread notifications or system alerts right now.</p>
+                </div>
+            <% } else { %>
+                <div class="list-group list-group-flush">
+                    <% notifications.forEach(notif => { 
+                        let iconClass = 'bi-info-circle text-info';
+                        let bgClass = '';
+                        if (notif.type === 'success') iconClass = 'bi-check-circle text-success';
+                        else if (notif.type === 'warning') iconClass = 'bi-exclamation-triangle text-warning';
+                        else if (notif.type === 'danger') iconClass = 'bi-exclamation-octagon text-danger';
+
+                        if (!notif.is_read) bgClass = 'bg-primary-subtle bg-opacity-25';
+                    %>
+                        <div class="list-group-item p-3 <%= bgClass %> d-flex align-items-start justify-content-between gap-3">
+                            <div class="d-flex align-items-start gap-3">
+                                <i class="bi <%= iconClass %> fs-4 mt-1"></i>
+                                <div>
+                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                        <h6 class="fw-bold mb-0 <%= !notif.is_read ? 'text-primary' : 'text-dark' %>"><%= notif.title %></h6>
+                                        <% if (!notif.is_read) { %>
+                                            <span class="badge bg-primary rounded-pill" style="font-size: 0.65rem;">NEW</span>
+                                        <% } %>
+                                    </div>
+                                    <p class="mb-1 text-secondary small"><%= notif.message %></p>
+                                    <span class="text-muted" style="font-size: 0.75rem;"><i class="bi bi-clock me-1"></i><%= timeAgo(notif.createdAt) %></span>
+                                </div>
+                            </div>
+                            <% if (notif.link) { %>
+                                <div>
+                                    <a href="<%= notif.link %>" class="btn btn-outline-primary btn-sm text-nowrap">
+                                        View <i class="bi bi-arrow-right ms-1"></i>
+                                    </a>
+                                </div>
+                            <% } %>
+                        </div>
+                    <% }) %>
+                </div>
+            <% } %>
+        </div>
+    </main>
+</div>
+
+<%- include('../partials/footer') %>

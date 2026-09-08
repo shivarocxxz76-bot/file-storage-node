@@ -1,0 +1,257 @@
+<%- include('../partials/header') %>
+<%- include('../partials/sidebar') %>
+
+<div class="main-content">
+    <%- include('../partials/topbar') %>
+
+    <main class="page-body">
+        <input type="hidden" id="currentFolderId" value="<%= currentFolder ? currentFolder._id : '' %>">
+
+        <!-- Header Actions & Breadcrumb -->
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3 gap-3">
+            <div>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-1">
+                        <% breadcrumbs.forEach((bc, idx) => { %>
+                            <% if (idx === breadcrumbs.length - 1) { %>
+                                <li class="breadcrumb-item active fw-bold" aria-current="page"><%= bc.name %></li>
+                            <% } else { %>
+                                <li class="breadcrumb-item">
+                                    <a href="/files<%= bc.id ? '?folder_id=' + bc.id : '' %>" class="text-decoration-none">
+                                        <%= bc.name %>
+                                    </a>
+                                </li>
+                            <% } %>
+                        <% }) %>
+                    </ol>
+                </nav>
+                <p class="text-muted small mb-0"><%= folders.length %> folder(s), <%= files.length %> file(s) &bull; AES-256 Protected</p>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#newFolderModal">
+                    <i class="bi bi-folder-plus me-1"></i> New Folder
+                </button>
+                <button type="button" class="btn btn-primary" onclick="document.getElementById('fileUploadInput').click()">
+                    <i class="bi bi-cloud-upload me-1"></i> Upload Files
+                </button>
+            </div>
+        </div>
+
+        <!-- Filter Pills & View Mode Switch -->
+        <div class="card card-custom p-3 mb-4">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                <div class="d-flex flex-wrap gap-1">
+                    <a href="/files<%= currentFolder ? '?folder_id=' + currentFolder._id + '&' : '?' %>category=all" 
+                       class="btn btn-sm <%= categoryFilter === 'all' ? 'btn-primary' : 'btn-outline-secondary' %>">All Files</a>
+                    <a href="/files<%= currentFolder ? '?folder_id=' + currentFolder._id + '&' : '?' %>category=documents" 
+                       class="btn btn-sm <%= categoryFilter === 'documents' ? 'btn-primary' : 'btn-outline-secondary' %>"><i class="bi bi-file-earmark-text me-1"></i>Docs</a>
+                    <a href="/files<%= currentFolder ? '?folder_id=' + currentFolder._id + '&' : '?' %>category=images" 
+                       class="btn btn-sm <%= categoryFilter === 'images' ? 'btn-primary' : 'btn-outline-secondary' %>"><i class="bi bi-image me-1"></i>Images</a>
+                    <a href="/files<%= currentFolder ? '?folder_id=' + currentFolder._id + '&' : '?' %>category=videos" 
+                       class="btn btn-sm <%= categoryFilter === 'videos' ? 'btn-primary' : 'btn-outline-secondary' %>"><i class="bi bi-play-circle me-1"></i>Media</a>
+                    <a href="/files<%= currentFolder ? '?folder_id=' + currentFolder._id + '&' : '?' %>category=archives" 
+                       class="btn btn-sm <%= categoryFilter === 'archives' ? 'btn-primary' : 'btn-outline-secondary' %>"><i class="bi bi-file-earmark-zip me-1"></i>Zips</a>
+                    <a href="/files<%= currentFolder ? '?folder_id=' + currentFolder._id + '&' : '?' %>category=code" 
+                       class="btn btn-sm <%= categoryFilter === 'code' ? 'btn-primary' : 'btn-outline-secondary' %>"><i class="bi bi-code-slash me-1"></i>Code</a>
+                </div>
+
+                <div class="btn-group btn-group-sm">
+                    <a href="?view=grid" class="btn <%= viewMode === 'grid' ? 'btn-primary' : 'btn-outline-secondary' %>">
+                        <i class="bi bi-grid-3x3-gap-fill"></i>
+                    </a>
+                    <a href="?view=list" class="btn <%= viewMode === 'list' ? 'btn-primary' : 'btn-outline-secondary' %>">
+                        <i class="bi bi-list-task"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dropzone Box -->
+        <div class="dropzone-box mb-4" id="fileDropzone">
+            <i class="bi bi-cloud-arrow-up dropzone-icon"></i>
+            <h6 class="fw-semibold mb-1">Drag files here to encrypt & upload to <em><%= currentFolder ? currentFolder.folder_name : 'Root' %></em></h6>
+            <p class="text-muted small mb-0">or click to browse files from device</p>
+            <input type="file" id="fileUploadInput" multiple class="d-none">
+        </div>
+
+        <div id="uploadProgressContainer" class="d-none card card-custom p-3 mb-4">
+            <div class="d-flex justify-content-between small text-muted mb-1">
+                <span id="uploadStatusText">Encrypting & uploading files...</span>
+            </div>
+            <div class="progress" style="height: 8px;">
+                <div id="uploadProgressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-primary" role="progressbar" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <!-- Subfolders -->
+        <% if (folders && folders.length > 0 && categoryFilter === 'all') { %>
+            <h6 class="fw-bold mb-3"><i class="bi bi-folder text-primary me-2"></i>Folders</h6>
+            <div class="row g-3 mb-4">
+                <% folders.forEach(folder => { %>
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 searchable-item" data-search="<%= folder.folder_name %>">
+                        <div class="folder-card d-flex align-items-center justify-content-between">
+                            <a href="/files?folder_id=<%= folder._id %>" class="d-flex align-items-center text-decoration-none text-reset flex-grow-1 me-2 text-truncate">
+                                <i class="bi bi-folder-fill fs-4 me-2" style="color: <%= folder.color_code || '#3b82f6' %>"></i>
+                                <span class="fw-semibold text-truncate"><%= folder.folder_name %></span>
+                            </a>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-light border-0" type="button" data-bs-toggle="dropdown">
+                                    <i class="bi bi-three-dots-vertical"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                                    <li><a class="dropdown-item" href="/files?folder_id=<%= folder._id %>"><i class="bi bi-folder2-open me-2"></i> Open</a></li>
+                                    <li>
+                                        <form method="POST" action="/folders/delete" onsubmit="return confirm('Move folder to Recycle Bin?')">
+                                            <input type="hidden" name="folder_id" value="<%= folder._id %>">
+                                            <button type="submit" class="dropdown-item text-danger"><i class="bi bi-trash3 me-2"></i> Delete</button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
+        <% } %>
+
+        <!-- Files Section -->
+        <h6 class="fw-bold mb-3"><i class="bi bi-file-earmark-text text-primary me-2"></i>Files (<%= files.length %>)</h6>
+
+        <% if (!files || files.length === 0) { %>
+            <div class="card card-custom text-center py-5">
+                <i class="bi bi-folder2-open display-4 text-muted mb-2"></i>
+                <h5>No Files in this Directory</h5>
+                <p class="text-muted small">Drop files into the upload box above to store your documents securely with AES-256 encryption.</p>
+            </div>
+        <% } else { %>
+            <% if (viewMode === 'grid') { %>
+                <!-- Grid View -->
+                <div class="row g-3">
+                    <% files.forEach(file => { 
+                        const iconData = getFileIcon(file.file_extension);
+                    %>
+                        <div class="col-6 col-sm-6 col-md-4 col-lg-3 searchable-item" data-search="<%= file.original_name %>">
+                            <div class="file-card h-100 d-flex flex-column justify-content-between">
+                                <div>
+                                    <div class="file-icon-wrapper" role="button" onclick="previewFile('<%= file._id %>')">
+                                        <i class="bi <%= iconData.icon %> <%= iconData.color %>"></i>
+                                    </div>
+                                    <div class="file-name text-center" title="<%= file.original_name %>">
+                                        <%= file.original_name %>
+                                    </div>
+                                    <div class="file-meta text-center mt-1">
+                                        <%= formatBytes(file.file_size) %> &bull; <%= timeAgo(file.createdAt) %>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top">
+                                    <button class="btn btn-sm btn-outline-primary py-0 px-2" onclick="previewFile('<%= file._id %>')" title="Preview">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                    <a href="/files/download?file_id=<%= file._id %>" class="btn btn-sm btn-outline-secondary py-0 px-2" title="Download Decrypted">
+                                        <i class="bi bi-download"></i>
+                                    </a>
+                                    <button class="btn btn-sm btn-outline-secondary py-0 px-2" data-file-id="<%= file._id %>" data-file-name="<%= file.original_name %>" onclick="openShareModal(this.dataset.fileId, this.dataset.fileName)" title="Share">
+                                        <i class="bi bi-share"></i>
+                                    </button>
+                                    
+                                    <div class="dropdown d-inline">
+                                        <button class="btn btn-sm btn-outline-secondary py-0 px-2" type="button" data-bs-toggle="dropdown">
+                                            <i class="bi bi-three-dots-vertical"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 small">
+                                            <li>
+                                                <button class="dropdown-item" data-file-id="<%= file._id %>" data-file-name="<%= file.original_name %>" onclick="openRenameModal(this.dataset.fileId, this.dataset.fileName)">
+                                                    <i class="bi bi-pencil-square me-2 text-primary"></i> Rename
+                                                </button>
+                                            </li>
+                                            <li>
+                                                <button class="dropdown-item" data-file-id="<%= file._id %>" data-file-name="<%= file.original_name %>" data-folder-id="<%= file.folder ? file.folder._id : '' %>" onclick="openMoveModal(this.dataset.fileId, this.dataset.fileName, this.dataset.folderId)">
+                                                    <i class="bi bi-folder-symlink me-2 text-info"></i> Move to Folder
+                                                </button>
+                                            </li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <form method="POST" action="/files/delete" onsubmit="return confirm('Move file to Recycle Bin?')">
+                                                    <input type="hidden" name="file_id" value="<%= file._id %>">
+                                                    <button type="submit" class="dropdown-item text-danger">
+                                                        <i class="bi bi-trash3 me-2"></i> Move to Trash
+                                                    </button>
+                                                </form>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <% }) %>
+                </div>
+            <% } else { %>
+                <!-- List View -->
+                <div class="card card-custom p-0 overflow-hidden">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Size</th>
+                                    <th>Type</th>
+                                    <th>Encryption</th>
+                                    <th>Uploaded</th>
+                                    <th>Downloads</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% files.forEach(file => { 
+                                    const iconData = getFileIcon(file.file_extension);
+                                %>
+                                    <tr class="searchable-item" data-search="<%= file.original_name %>">
+                                        <td>
+                                            <div class="d-flex align-items-center" role="button" onclick="previewFile('<%= file._id %>')">
+                                                <i class="bi <%= iconData.icon %> <%= iconData.color %> fs-4 me-2"></i>
+                                                <span class="fw-medium text-truncate" style="max-width: 280px;">
+                                                    <%= file.original_name %>
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td class="small text-muted"><%= formatBytes(file.file_size) %></td>
+                                        <td><span class="badge bg-body-secondary text-secondary"><%= file.file_extension.toUpperCase() %></span></td>
+                                        <td><span class="badge bg-primary-subtle text-primary">AES-256</span></td>
+                                        <td class="small text-muted"><%= timeAgo(file.createdAt) %></td>
+                                        <td class="small text-muted"><%= file.downloads_count %></td>
+                                        <td class="text-end">
+                                            <div class="btn-group btn-group-sm">
+                                                <button type="button" class="btn btn-outline-secondary" onclick="previewFile('<%= file._id %>')" title="Preview">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
+                                                <a href="/files/download?file_id=<%= file._id %>" class="btn btn-outline-secondary" title="Download Decrypted">
+                                                    <i class="bi bi-download"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-outline-secondary" data-file-id="<%= file._id %>" data-file-name="<%= file.original_name %>" onclick="openShareModal(this.dataset.fileId, this.dataset.fileName)" title="Share">
+                                                    <i class="bi bi-share"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-outline-secondary" data-file-id="<%= file._id %>" data-file-name="<%= file.original_name %>" onclick="openRenameModal(this.dataset.fileId, this.dataset.fileName)" title="Rename">
+                                                    <i class="bi bi-pencil-square"></i>
+                                                </button>
+                                                <form method="POST" action="/files/delete" class="d-inline" onsubmit="return confirm('Move file to Recycle Bin?')">
+                                                    <input type="hidden" name="file_id" value="<%= file._id %>">
+                                                    <button type="submit" class="btn btn-outline-danger" title="Delete">
+                                                        <i class="bi bi-trash3"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            <% } %>
+        <% } %>
+    </main>
+</div>
+
+<%- include('../partials/footer') %>

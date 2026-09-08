@@ -1,0 +1,133 @@
+<%- include('../partials/header') %>
+<%- include('../partials/sidebar') %>
+
+<div class="main-content">
+    <%- include('../partials/topbar') %>
+
+    <main class="page-body">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+            <div>
+                <h4 class="fw-bold mb-1">Recycle Bin</h4>
+                <p class="text-muted small mb-0">Restore accidentally deleted items or purge them permanently to reclaim encrypted storage quota.</p>
+            </div>
+            <% if (totalDeletedCount > 0) { %>
+                <form method="POST" action="/files/permanent-delete" onsubmit="return confirm('Are you sure you want to permanently purge all items in Recycle Bin? This action cannot be undone.')">
+                    <input type="hidden" name="empty_all" value="1">
+                    <button type="submit" class="btn btn-outline-danger">
+                        <i class="bi bi-trash3-fill me-1"></i> Empty Recycle Bin
+                    </button>
+                </form>
+            <% } %>
+        </div>
+
+        <% if (totalDeletedCount === 0) { %>
+            <div class="card card-custom text-center py-5">
+                <i class="bi bi-trash3 display-4 text-muted mb-2"></i>
+                <h5>Recycle Bin is Empty</h5>
+                <p class="text-muted small">Items you delete will be kept here safely for quick restoration.</p>
+                <div class="mt-2">
+                    <a href="/files" class="btn btn-outline-primary">
+                        <i class="bi bi-arrow-left me-1"></i> Back to My Files
+                    </a>
+                </div>
+            </div>
+        <% } else { %>
+            <!-- Deleted Folders Section -->
+            <% if (deletedFolders && deletedFolders.length > 0) { %>
+                <h6 class="fw-bold mb-3"><i class="bi bi-folder-x text-warning me-2"></i>Deleted Folders (<%= deletedFolders.length %>)</h6>
+                <div class="row g-3 mb-4">
+                    <% deletedFolders.forEach(folder => { %>
+                        <div class="col-12 col-md-6 col-lg-4 searchable-item" data-search="<%= folder.folder_name %>">
+                            <div class="card card-custom p-3 border-warning-subtle">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div class="d-flex align-items-center text-truncate">
+                                        <i class="bi bi-folder-fill fs-3 text-secondary me-2"></i>
+                                        <div>
+                                            <div class="fw-semibold text-truncate" style="max-width: 170px;"><%= folder.folder_name %></div>
+                                            <small class="text-muted">Deleted <%= timeAgo(folder.deleted_at) %></small>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-1">
+                                        <form method="POST" action="/files/restore" class="d-inline">
+                                            <input type="hidden" name="folder_id" value="<%= folder._id %>">
+                                            <button type="submit" class="btn btn-sm btn-outline-success" title="Restore Folder">
+                                                <i class="bi bi-arrow-counterclockwise"></i>
+                                            </button>
+                                        </form>
+                                        <form method="POST" action="/files/permanent-delete" class="d-inline" onsubmit="return confirm('Permanently purge this folder and its contents?')">
+                                            <input type="hidden" name="folder_id" value="<%= folder._id %>">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Permanently Purge">
+                                                <i class="bi bi-x-lg"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <% }) %>
+                </div>
+            <% } %>
+
+            <!-- Deleted Files Section -->
+            <% if (deletedFiles && deletedFiles.length > 0) { %>
+                <h6 class="fw-bold mb-3"><i class="bi bi-file-earmark-x text-danger me-2"></i>Deleted Files (<%= deletedFiles.length %>)</h6>
+                <div class="card card-custom p-0 overflow-hidden">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>File Name</th>
+                                    <th>Original Folder</th>
+                                    <th>Size</th>
+                                    <th>Deleted At</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% deletedFiles.forEach(file => { 
+                                    const iconData = getFileIcon(file.file_extension);
+                                %>
+                                    <tr class="searchable-item" data-search="<%= file.original_name %>">
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <i class="bi <%= iconData.icon %> <%= iconData.color %> fs-4 me-2"></i>
+                                                <span class="fw-medium text-truncate" style="max-width: 250px;">
+                                                    <%= file.original_name %>
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-body-secondary text-secondary">
+                                                <%= file.folder ? file.folder.folder_name : 'Root' %>
+                                            </span>
+                                        </td>
+                                        <td class="small text-muted"><%= formatBytes(file.file_size) %></td>
+                                        <td class="small text-muted"><%= timeAgo(file.deleted_at) %></td>
+                                        <td class="text-end">
+                                            <div class="btn-group btn-group-sm">
+                                                <form method="POST" action="/files/restore" class="d-inline">
+                                                    <input type="hidden" name="file_id" value="<%= file._id %>">
+                                                    <button type="submit" class="btn btn-outline-success" title="Restore File">
+                                                        <i class="bi bi-arrow-counterclockwise me-1"></i> Restore
+                                                    </button>
+                                                </form>
+                                                <form method="POST" action="/files/permanent-delete" class="d-inline ms-1" onsubmit="return confirm('Permanently delete this encrypted file from storage? This cannot be recovered.')">
+                                                    <input type="hidden" name="file_id" value="<%= file._id %>">
+                                                    <button type="submit" class="btn btn-outline-danger" title="Purge File">
+                                                        <i class="bi bi-x-circle me-1"></i> Delete Forever
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            <% } %>
+        <% } %>
+    </main>
+</div>
+
+<%- include('../partials/footer') %>

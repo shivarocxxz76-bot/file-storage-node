@@ -1,0 +1,50 @@
+<aside class="sidebar border-end">
+    <!-- Brand -->
+    <a href="/admin/dashboard" class="sidebar-brand text-primary">
+        <i class="bi bi-shield-check me-2 fs-4"></i>
+        <span><%= appName %> <span class="badge bg-danger-subtle text-danger fs-6 ms-1" style="font-size:0.65rem;">ADMIN</span></span>
+    </a>
+
+    <!-- Nav Items -->
+    <nav class="sidebar-nav">
+        <div class="sidebar-heading">Admin Management</div>
+        <a href="/admin/dashboard" class="nav-link <%= currentUrl === '/admin/dashboard' ? 'active' : '' %>">
+            <i class="bi bi-speedometer2"></i>
+            <span>Overview</span>
+        </a>
+        <a href="/admin/users" class="nav-link <%= currentUrl.startsWith('/admin/users') ? 'active' : '' %>">
+            <i class="bi bi-people-fill"></i>
+            <span>User Management</span>
+        </a>
+        <a href="/admin/files" class="nav-link <%= currentUrl.startsWith('/admin/files') ? 'active' : '' %>">
+            <i class="bi bi-files"></i>
+            <span>All Files & Storage</span>
+        </a>
+        <a href="/admin/plans" class="nav-link <%= currentUrl.startsWith('/admin/plans') ? 'active' : '' %>">
+            <i class="bi bi-hdd-network-fill"></i>
+            <span>Storage Plans</span>
+        </a>
+        <a href="/admin/payments" class="nav-link <%= currentUrl.startsWith('/admin/payments') ? 'active' : '' %>">
+            <i class="bi bi-credit-card-fill"></i>
+            <span>Transactions</span>
+        </a>
+        <a href="/admin/support" class="nav-link <%= currentUrl.startsWith('/admin/support') ? 'active' : '' %>">
+            <i class="bi bi-headset"></i>
+            <span>Helpdesk Tickets</span>
+        </a>
+        <a href="/admin/logs" class="nav-link <%= currentUrl.startsWith('/admin/logs') ? 'active' : '' %>">
+            <i class="bi bi-shield-lock"></i>
+            <span>System Audit Logs</span>
+        </a>
+        <a href="/admin/settings" class="nav-link <%= currentUrl.startsWith('/admin/settings') ? 'active' : '' %>">
+            <i class="bi bi-sliders"></i>
+            <span>System Settings</span>
+        </a>
+
+        <div class="sidebar-heading">Account</div>
+        <a href="/auth/logout" class="nav-link text-danger">
+            <i class="bi bi-box-arrow-right"></i>
+            <span>Logout</span>
+        </a>
+    </nav>
+</aside>

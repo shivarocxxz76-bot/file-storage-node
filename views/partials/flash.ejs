@@ -1,0 +1,43 @@
+<% if (typeof messages !== 'undefined') { %>
+    <div class="flash-messages-container px-3 px-lg-4 pt-3">
+        <% if (messages.success && messages.success.length > 0) { %>
+            <% messages.success.forEach(msg => { %>
+                <div class="alert alert-success alert-dismissible fade show alert-auto-dismiss d-flex align-items-center shadow-sm" role="alert">
+                    <i class="bi bi-check-circle-fill me-2 fs-5"></i>
+                    <div><%= msg %></div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            <% }) %>
+        <% } %>
+
+        <% if (messages.danger && messages.danger.length > 0) { %>
+            <% messages.danger.forEach(msg => { %>
+                <div class="alert alert-danger alert-dismissible fade show alert-auto-dismiss d-flex align-items-center shadow-sm" role="alert">
+                    <i class="bi bi-exclamation-octagon-fill me-2 fs-5"></i>
+                    <div><%= msg %></div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            <% }) %>
+        <% } %>
+
+        <% if (messages.warning && messages.warning.length > 0) { %>
+            <% messages.warning.forEach(msg => { %>
+                <div class="alert alert-warning alert-dismissible fade show alert-auto-dismiss d-flex align-items-center shadow-sm" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+                    <div><%= msg %></div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            <% }) %>
+        <% } %>
+
+        <% if (messages.info && messages.info.length > 0) { %>
+            <% messages.info.forEach(msg => { %>
+                <div class="alert alert-info alert-dismissible fade show alert-auto-dismiss d-flex align-items-center shadow-sm" role="alert">
+                    <i class="bi bi-info-circle-fill me-2 fs-5"></i>
+                    <div><%= msg %></div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            <% }) %>
+        <% } %>
+    </div>
+<% } %>

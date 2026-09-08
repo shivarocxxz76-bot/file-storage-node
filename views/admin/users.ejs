@@ -1,0 +1,187 @@
+<%- include('../partials/header') %>
+<%- include('../partials/admin_sidebar') %>
+
+<div class="main-content">
+    <%- include('../partials/topbar') %>
+
+    <main class="page-body">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+            <div>
+                <h4 class="fw-bold mb-1">User Management</h4>
+                <p class="text-muted small mb-0">Control user accounts, allocate storage quotas, assign roles, and moderate access.</p>
+            </div>
+            <div class="d-flex gap-2">
+                <input type="text" id="userFilterInput" class="form-control form-control-sm" placeholder="Search users by name, email..." style="max-width: 250px;" onkeyup="filterUserTable()">
+            </div>
+        </div>
+
+        <div class="card card-custom p-4">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" id="userManagementTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th>User Name & Email</th>
+                            <th>Role</th>
+                            <th>Plan & Storage Used</th>
+                            <th>Status</th>
+                            <th>Files</th>
+                            <th>Joined</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% users.forEach(u => { 
+                            const storageUsed = u.storage_used_bytes || 0;
+                            const storageLimit = u.storage_limit_bytes || 524288000;
+                            const percentage = storageLimit > 0 ? Math.min(100, ((storageUsed / storageLimit) * 100).toFixed(0)) : 0;
+                            const isSelf = user && user._id.toString() === u._id.toString();
+                        %>
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-circle bg-primary-subtle text-primary fw-bold me-2 rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                                            <%= u.full_name.charAt(0).toUpperCase() %>
+                                        </div>
+                                        <div>
+                                            <div class="fw-semibold text-dark"><%= u.full_name %> <% if (isSelf) { %><span class="badge bg-secondary-subtle text-secondary" style="font-size: 0.65rem;">You</span><% } %></div>
+                                            <small class="text-muted"><%= u.email %></small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-<%= u.role === 'admin' ? 'danger' : (u.role === 'editor' ? 'warning' : 'primary') %>-subtle text-<%= u.role === 'admin' ? 'danger' : (u.role === 'editor' ? 'warning' : 'primary') %> text-uppercase">
+                                        <%= u.role %>
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="small fw-semibold text-dark"><%= u.storage_plan ? u.storage_plan.plan_name : 'Free Starter' %></div>
+                                    <div class="progress my-1" style="height: 5px; width: 120px;">
+                                        <div class="progress-bar <%= percentage > 90 ? 'bg-danger' : 'bg-primary' %>" style="width: <%= percentage %>%"></div>
+                                    </div>
+                                    <small class="text-muted"><%= formatBytes(storageUsed) %> / <%= formatBytes(storageLimit) %></small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-<%= u.status === 'active' ? 'success' : 'danger' %>-subtle text-<%= u.status === 'active' ? 'success' : 'danger' %> text-capitalize">
+                                        <%= u.status %>
+                                    </span>
+                                </td>
+                                <td class="fw-semibold"><%= u.total_files %></td>
+                                <td class="small text-muted"><%= timeAgo(u.createdAt) %></td>
+                                <td class="text-end">
+                                    <div class="btn-group btn-group-sm">
+                                        <!-- Edit Quota & Role Button -->
+                                        <button type="button" class="btn btn-outline-secondary" data-user-id="<%= u._id %>" data-full-name="<%= u.full_name %>" data-role="<%= u.role %>" data-plan-id="<%= u.storage_plan ? u.storage_plan._id : '' %>" data-limit-mb="<%= Math.round(storageLimit / (1024 * 1024)) %>" onclick="openQuotaModal(this.dataset.userId, this.dataset.fullName, this.dataset.role, this.dataset.planId, this.dataset.limitMb)" title="Edit Quota & Role">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </button>
+
+                                        <!-- Toggle Status (Suspend / Activate) -->
+                                        <% if (!isSelf) { %>
+                                            <form method="POST" action="/admin/users/toggle-status" class="d-inline">
+                                                <input type="hidden" name="target_user_id" value="<%= u._id %>">
+                                                <input type="hidden" name="new_status" value="<%= u.status === 'active' ? 'suspended' : 'active' %>">
+                                                <button type="submit" class="btn btn-outline-<%= u.status === 'active' ? 'warning' : 'success' %>" title="<%= u.status === 'active' ? 'Suspend User' : 'Activate User' %>">
+                                                    <i class="bi <%= u.status === 'active' ? 'bi-person-slash' : 'bi-person-check' %>"></i>
+                                                </button>
+                                            </form>
+
+                                            <!-- Delete User -->
+                                            <form method="POST" action="/admin/users/delete" class="d-inline" onsubmit="return confirm('WARNING: Are you sure you want to completely delete <%= u.full_name %> and purge all their files?')">
+                                                <input type="hidden" name="target_user_id" value="<%= u._id %>">
+                                                <button type="submit" class="btn btn-outline-danger" title="Delete User">
+                                                    <i class="bi bi-trash3"></i>
+                                                </button>
+                                            </form>
+                                        <% } %>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Edit User Quota & Role Modal -->
+<div class="modal fade" id="userQuotaModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold"><i class="bi bi-sliders text-primary me-2"></i>Edit Quota & Role</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="/admin/users/update-quota">
+                <input type="hidden" name="target_user_id" id="modalTargetUserId">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Target User</label>
+                        <input type="text" id="modalTargetUserName" class="form-control" readonly disabled>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">User Role</label>
+                        <select name="role" id="modalTargetUserRole" class="form-select" required>
+                            <option value="user">User (Standard Access)</option>
+                            <option value="editor">Editor (Upload & Share Rights)</option>
+                            <option value="viewer">Viewer (Read-Only Access)</option>
+                            <option value="admin">Administrator (Full Control)</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Assign Storage Plan</label>
+                        <select name="plan_id" id="modalTargetPlanId" class="form-select" onchange="onPlanSelectChanged()">
+                            <option value="">-- Custom / Manual Quota --</option>
+                            <% plans.forEach(p => { %>
+                                <option value="<%= p._id %>" data-mb="<%= Math.round(p.storage_bytes / (1024 * 1024)) %>">
+                                    <%= p.plan_name %> (<%= formatBytes(p.storage_bytes) %> - $<%= p.price %>)
+                                </option>
+                            <% }) %>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Storage Limit (in Megabytes - MB)</label>
+                        <input type="number" name="storage_limit_mb" id="modalTargetStorageMb" class="form-control" min="10" max="500000" required>
+                        <small class="text-muted">e.g., 500 = 500 MB, 2048 = 2 GB, 20480 = 20 GB</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-sm">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function filterUserTable() {
+    const query = document.getElementById('userFilterInput').value.toLowerCase();
+    const rows = document.querySelectorAll('#userManagementTable tbody tr');
+    rows.forEach(r => {
+        const text = r.innerText.toLowerCase();
+        r.style.display = text.includes(query) ? '' : 'none';
+    });
+}
+
+function openQuotaModal(userId, fullName, role, planId, limitMb) {
+    document.getElementById('modalTargetUserId').value = userId;
+    document.getElementById('modalTargetUserName').value = fullName;
+    document.getElementById('modalTargetUserRole').value = role;
+    document.getElementById('modalTargetPlanId').value = planId || '';
+    document.getElementById('modalTargetStorageMb').value = limitMb || 500;
+
+    const modal = new bootstrap.Modal(document.getElementById('userQuotaModal'));
+    modal.show();
+}
+
+function onPlanSelectChanged() {
+    const select = document.getElementById('modalTargetPlanId');
+    const selectedOption = select.options[select.selectedIndex];
+    const mb = selectedOption.getAttribute('data-mb');
+    if (mb) {
+        document.getElementById('modalTargetStorageMb').value = mb;
+    }
+}
+</script>
+
+<%- include('../partials/footer') %>

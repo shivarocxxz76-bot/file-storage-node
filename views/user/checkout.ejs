@@ -1,0 +1,203 @@
+<%- include('../partials/header') %>
+<%- include('../partials/sidebar') %>
+
+<div class="main-content">
+    <%- include('../partials/topbar') %>
+
+    <main class="page-body">
+        <div class="mb-4">
+            <a href="/storage-plans" class="btn btn-sm btn-outline-secondary mb-2">
+                <i class="bi bi-arrow-left me-1"></i> Back to Plans
+            </a>
+            <h4 class="fw-bold mb-1">Upgrade Plan Checkout</h4>
+            <p class="text-muted small mb-0">Secure Demo Payment Simulation. No real credit card or money will be charged.</p>
+        </div>
+
+        <div class="row g-4">
+            <!-- Left: Payment Form & Method Selection -->
+            <div class="col-lg-7">
+                <div class="card card-custom p-4">
+                    <h5 class="fw-bold mb-3">Select Payment Method</h5>
+
+                    <form method="POST" action="/checkout/process" id="demoPaymentForm">
+                        <input type="hidden" name="plan_id" value="<%= plan._id %>">
+
+                        <!-- Payment Methods Navigation -->
+                        <div class="row g-2 mb-4">
+                            <div class="col-6 col-md-3">
+                                <label class="payment-method-card d-block p-3 border rounded text-center cursor-pointer active border-primary bg-primary-subtle" for="methodCard">
+                                    <input type="radio" name="payment_method" id="methodCard" value="card" class="d-none" checked onchange="switchPaymentMethod('card')">
+                                    <i class="bi bi-credit-card-2-front fs-3 text-primary d-block mb-1"></i>
+                                    <span class="small fw-semibold">Card</span>
+                                </label>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <label class="payment-method-card d-block p-3 border rounded text-center cursor-pointer" for="methodUpi">
+                                    <input type="radio" name="payment_method" id="methodUpi" value="upi" class="d-none" onchange="switchPaymentMethod('upi')">
+                                    <i class="bi bi-qr-code-scan fs-3 text-success d-block mb-1"></i>
+                                    <span class="small fw-semibold">UPI / QR</span>
+                                </label>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <label class="payment-method-card d-block p-3 border rounded text-center cursor-pointer" for="methodNetbanking">
+                                    <input type="radio" name="payment_method" id="methodNetbanking" value="netbanking" class="d-none" onchange="switchPaymentMethod('netbanking')">
+                                    <i class="bi bi-bank fs-3 text-warning d-block mb-1"></i>
+                                    <span class="small fw-semibold">Net Banking</span>
+                                </label>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <label class="payment-method-card d-block p-3 border rounded text-center cursor-pointer" for="methodPaypal">
+                                    <input type="radio" name="payment_method" id="methodPaypal" value="paypal" class="d-none" onchange="switchPaymentMethod('paypal')">
+                                    <i class="bi bi-paypal fs-3 text-info d-block mb-1"></i>
+                                    <span class="small fw-semibold">PayPal</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Tab 1: Credit / Debit Card -->
+                        <div id="methodCardContainer" class="payment-form-section">
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold">Cardholder Name</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                    <input type="text" class="form-control" placeholder="e.g. John Doe" value="<%= user ? user.full_name : 'John Doe' %>">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold">Card Number (Demo: 4242...)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-credit-card"></i></span>
+                                    <input type="text" class="form-control" placeholder="4242 •••• •••• 4242" value="4242 4242 4242 4242" maxlength="19">
+                                </div>
+                            </div>
+                            <div class="row g-3 mb-3">
+                                <div class="col-6">
+                                    <label class="form-label small fw-semibold">Expiry Date</label>
+                                    <input type="text" class="form-control" placeholder="MM/YY" value="12/28" maxlength="5">
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label small fw-semibold">CVV / CVC</label>
+                                    <input type="password" class="form-control" placeholder="•••" value="123" maxlength="4">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tab 2: UPI / QR -->
+                        <div id="methodUpiContainer" class="payment-form-section d-none">
+                            <div class="text-center p-3 border rounded bg-body-secondary mb-3">
+                                <i class="bi bi-qr-code display-4 text-primary d-block mb-2"></i>
+                                <span class="small text-muted d-block">Scan QR using GPay, PhonePe, Paytm, or BHIM</span>
+                                <strong class="badge bg-primary mt-1">demo-merchant@upi</strong>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold">Virtual Payment Address (VPA)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">@</span>
+                                    <input type="text" class="form-control" placeholder="username@okhdfcbank" value="user@demo-upi">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tab 3: Net Banking -->
+                        <div id="methodNetbankingContainer" class="payment-form-section d-none">
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold">Choose Your Bank</label>
+                                <select class="form-select">
+                                    <option selected>HDFC Bank</option>
+                                    <option>State Bank of India</option>
+                                    <option>ICICI Bank</option>
+                                    <option>Axis Bank</option>
+                                    <option>Citibank</option>
+                                    <option>Other / Demo Bank</option>
+                                </select>
+                            </div>
+                            <p class="small text-muted">You will be redirected to your simulated bank gateway to confirm authorization.</p>
+                        </div>
+
+                        <!-- Tab 4: PayPal -->
+                        <div id="methodPaypalContainer" class="payment-form-section d-none">
+                            <div class="p-3 border rounded bg-body-secondary text-center mb-3">
+                                <i class="bi bi-paypal fs-1 text-primary mb-2 d-block"></i>
+                                <p class="small text-muted mb-0">Pay with your simulated PayPal wallet in 1-click.</p>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info d-flex align-items-center small py-2 mb-4">
+                            <i class="bi bi-info-circle-fill fs-5 me-2 text-info"></i>
+                            <span><strong>Simulation Mode:</strong> No money is deducted. Submitting instantly provisions your storage quota.</span>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold" id="btnPayNow">
+                            <i class="bi bi-lock-fill me-1"></i> Complete Demo Payment ($<%= plan.price.toFixed(2) %>)
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Right: Order Summary -->
+            <div class="col-lg-5">
+                <div class="card card-custom p-4">
+                    <h5 class="fw-bold mb-3">Order Summary</h5>
+
+                    <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                        <div>
+                            <h6 class="fw-bold mb-0"><%= plan.plan_name %> Plan</h6>
+                            <span class="badge bg-primary-subtle text-primary"><%= plan.billing_cycle || 'monthly' %> tier</span>
+                        </div>
+                        <span class="fs-5 fw-bold text-primary">$<%= plan.price.toFixed(2) %></span>
+                    </div>
+
+                    <div class="space-y-2 small mb-4">
+                        <div class="d-flex justify-content-between text-muted py-1">
+                            <span>Storage Allocation</span>
+                            <span class="fw-semibold text-dark"><%= formatBytes(plan.storage_bytes) %></span>
+                        </div>
+                        <div class="d-flex justify-content-between text-muted py-1">
+                            <span>Max Upload per File</span>
+                            <span class="fw-semibold text-dark"><%= formatBytes(plan.max_file_size) %></span>
+                        </div>
+                        <div class="d-flex justify-content-between text-muted py-1">
+                            <span>Encryption Standard</span>
+                            <span class="badge bg-success-subtle text-success">AES-256-CBC</span>
+                        </div>
+                        <div class="d-flex justify-content-between text-muted py-1">
+                            <span>Taxes & Fees</span>
+                            <span class="text-success fw-semibold">$0.00 (Demo)</span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center p-3 bg-body-secondary rounded mb-4">
+                        <span class="fw-bold">Total Due Today:</span>
+                        <span class="fs-4 fw-bold text-primary">$<%= plan.price.toFixed(2) %></span>
+                    </div>
+
+                    <div class="small text-muted">
+                        <p class="mb-2"><i class="bi bi-shield-check text-success me-1"></i> Instant automated storage provisioning.</p>
+                        <p class="mb-2"><i class="bi bi-arrow-repeat text-info me-1"></i> Upgrade or cancel anytime from account settings.</p>
+                        <p class="mb-0"><i class="bi bi-receipt text-secondary me-1"></i> Tax invoice generated and stored in Payment History.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+function switchPaymentMethod(method) {
+    // update label active classes
+    document.querySelectorAll('.payment-method-card').forEach(card => {
+        card.classList.remove('active', 'border-primary', 'bg-primary-subtle');
+    });
+    const selectedInput = document.getElementById('method' + method.charAt(0).toUpperCase() + method.slice(1));
+    if (selectedInput && selectedInput.closest('.payment-method-card')) {
+        selectedInput.closest('.payment-method-card').classList.add('active', 'border-primary', 'bg-primary-subtle');
+    }
+
+    // show/hide form sections
+    document.querySelectorAll('.payment-form-section').forEach(sec => sec.classList.add('d-none'));
+    const target = document.getElementById('method' + method.charAt(0).toUpperCase() + method.slice(1) + 'Container');
+    if (target) target.classList.remove('d-none');
+}
+</script>
+
+<%- include('../partials/footer') %>

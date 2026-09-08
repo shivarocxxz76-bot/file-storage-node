@@ -1,0 +1,94 @@
+<%- include('../partials/header') %>
+<%- include('../partials/admin_sidebar') %>
+
+<div class="main-content">
+    <%- include('../partials/topbar') %>
+
+    <main class="page-body">
+        <div class="mb-4">
+            <h4 class="fw-bold mb-1">Global System Configuration</h4>
+            <p class="text-muted small mb-0">Manage platform identity, cryptographic upload constraints, file restrictions, and access toggles.</p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="card card-custom p-4">
+                    <form method="POST" action="/admin/settings/save">
+                        <!-- General Settings -->
+                        <h6 class="fw-bold mb-3"><i class="bi bi-sliders text-primary me-2"></i>Platform Identity & Defaults</h6>
+                        
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Application Brand / Site Name</label>
+                            <input type="text" name="site_name" class="form-control" value="<%= settings.site_name || 'SecureVault Cloud' %>" required>
+                            <small class="text-muted">Displayed in application title, emails, and header navigation.</small>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Storage & Upload Policies -->
+                        <h6 class="fw-bold mb-3"><i class="bi bi-shield-lock text-primary me-2"></i>Upload Policies & Encryption Limits</h6>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Global Max File Size Limit (MB)</label>
+                            <input type="number" name="max_upload_size_mb" class="form-control" value="<%= settings.max_upload_size_mb || '100' %>" min="1" max="1000" required>
+                            <small class="text-muted">Hard ceiling for a single file upload buffer prior to AES-256 stream encryption.</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Permitted File Extensions Whitelist</label>
+                            <textarea name="allowed_extensions" class="form-control" rows="2" placeholder="jpg, jpeg, png, pdf, doc, docx, txt, zip, mp4"><%= settings.allowed_extensions || 'jpg, jpeg, png, gif, svg, webp, pdf, doc, docx, txt, xls, xlsx, ppt, pptx, csv, zip, rar, 7z, mp4, mp3' %></textarea>
+                            <small class="text-muted">Comma-separated list of safe extensions allowed for upload.</small>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- System Switches -->
+                        <h6 class="fw-bold mb-3"><i class="bi bi-toggles text-primary me-2"></i>Access & Security Switches</h6>
+
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" name="enable_registration" id="enableReg" <%= settings.enable_registration !== '0' ? 'checked' : '' %>>
+                            <label class="form-check-label fw-semibold" for="enableReg">Allow Public User Registration</label>
+                            <div class="text-muted small">When disabled, new users can only be provisioned by administrators.</div>
+                        </div>
+
+                        <div class="form-check form-switch mb-4">
+                            <input class="form-check-input" type="checkbox" name="maintenance_mode" id="maintenanceMode" <%= settings.maintenance_mode === '1' ? 'checked' : '' %>>
+                            <label class="form-check-label fw-semibold text-danger" for="maintenanceMode">Platform Maintenance Mode</label>
+                            <div class="text-muted small">Temporarily restrict access for non-admin accounts during infrastructure updates.</div>
+                        </div>
+
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check2-circle me-1"></i> Save Platform Configuration
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Right Info Panel -->
+            <div class="col-lg-4">
+                <div class="card card-custom p-4 mb-4">
+                    <h6 class="fw-bold mb-3"><i class="bi bi-info-circle text-primary me-2"></i>Security Architecture</h6>
+                    <ul class="list-unstyled small text-muted space-y-2 mb-0">
+                        <li class="mb-2"><i class="bi bi-check2-circle text-success me-1"></i> <strong>AES-256-CBC:</strong> Real-time buffer encryption with per-file 16-byte random IV.</li>
+                        <li class="mb-2"><i class="bi bi-check2-circle text-success me-1"></i> <strong>Integrity Check:</strong> SHA-256 file checksum validation during streaming.</li>
+                        <li class="mb-2"><i class="bi bi-check2-circle text-success me-1"></i> <strong>Isolated Web Root:</strong> Encrypted blobs stored outside public directory.</li>
+                        <li class="mb-2"><i class="bi bi-check2-circle text-success me-1"></i> <strong>Audit Compliance:</strong> Every user action is indexed in MongoDB.</li>
+                    </ul>
+                </div>
+
+                <div class="card card-custom p-4">
+                    <h6 class="fw-bold mb-2"><i class="bi bi-hdd-rack text-primary me-2"></i>Environment Details</h6>
+                    <div class="small text-muted space-y-1">
+                        <div><strong>Node Runtime:</strong> <%= process.version %></div>
+                        <div><strong>Environment:</strong> <%= process.env.NODE_ENV || 'development' %></div>
+                        <div><strong>Platform:</strong> <%= process.platform %></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<%- include('../partials/footer') %>

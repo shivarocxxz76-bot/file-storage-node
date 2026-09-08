@@ -1,0 +1,502 @@
+/* ==========================================================
+   SecureVault Cloud Custom Stylesheet (Modern SaaS Design)
+   ========================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+    --primary-color: #4f46e5;
+    --primary-hover: #4338ca;
+    --primary-light: #eef2ff;
+    --secondary-color: #64748b;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
+    --info-color: #06b6d4;
+    --purple-color: #8b5cf6;
+    
+    --bg-body: #f8fafc;
+    --bg-surface: #ffffff;
+    --bg-surface-secondary: #f1f5f9;
+    --border-color: #e2e8f0;
+    --border-focus: #c7d2fe;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #94a3b8;
+    
+    --sidebar-width: 270px;
+    --topbar-height: 70px;
+    --card-radius: 16px;
+    --btn-radius: 10px;
+    --transition-speed: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+}
+
+body {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: var(--bg-body);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    letter-spacing: -0.01em;
+    -webkit-font-smoothing: antialiased;
+}
+
+code, pre, .font-monospace {
+    font-family: 'JetBrains Mono', monospace !important;
+}
+
+/* ---------------- Layout & Shell ---------------- */
+.app-wrapper {
+    display: flex;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: var(--sidebar-width);
+    background-color: var(--bg-surface);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1020;
+    transition: transform var(--transition-speed);
+}
+
+.main-content {
+    flex: 1;
+    margin-left: var(--sidebar-width);
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    transition: margin-left var(--transition-speed);
+    background: var(--bg-body);
+}
+
+.topbar {
+    height: var(--topbar-height);
+    background-color: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    z-index: 1010;
+    display: flex;
+    align-items: center;
+    padding: 0 1.75rem;
+}
+
+.page-body {
+    flex: 1;
+    padding: 2rem 1.75rem;
+}
+
+/* ---------------- Sidebar Navigation ---------------- */
+.sidebar-brand {
+    height: var(--topbar-height);
+    display: flex;
+    align-items: center;
+    padding: 0 1.5rem;
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--primary-color);
+    text-decoration: none;
+    border-bottom: 1px solid var(--border-color);
+    letter-spacing: -0.02em;
+}
+
+.sidebar-nav {
+    padding: 1.25rem 0.85rem;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.sidebar-heading {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    padding: 0.75rem 0.75rem 0.35rem;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    padding: 0.7rem 0.9rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 0.92rem;
+    border-radius: var(--btn-radius);
+    margin-bottom: 0.3rem;
+    transition: all var(--transition-speed);
+}
+
+.nav-link i {
+    font-size: 1.2rem;
+    margin-right: 0.85rem;
+    width: 22px;
+    text-align: center;
+    transition: transform var(--transition-speed);
+}
+
+.nav-link:hover {
+    color: var(--primary-color);
+    background-color: var(--primary-light);
+}
+
+.nav-link:hover i {
+    transform: scale(1.1);
+}
+
+.nav-link.active {
+    color: #ffffff;
+    background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+}
+
+.nav-link.active i {
+    color: #ffffff;
+}
+
+.sidebar-storage-card {
+    margin: 1rem 0.85rem 1.25rem;
+    padding: 1.15rem;
+    background: linear-gradient(145deg, #f8fafc 0%, #f1f5f9 100%);
+    border-radius: 14px;
+    border: 1px solid var(--border-color);
+}
+
+/* ---------------- Cards & Surfaces ---------------- */
+.card-custom {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--card-radius);
+    box-shadow: var(--shadow-sm);
+    transition: transform var(--transition-speed), box-shadow var(--transition-speed), border-color var(--transition-speed);
+}
+
+.card-custom:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.stat-card {
+    padding: 1.35rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: var(--card-radius);
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: transparent;
+    transition: background var(--transition-speed);
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.stat-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.55rem;
+    flex-shrink: 0;
+}
+
+.stat-icon.primary { background: #eef2ff; color: #4f46e5; }
+.stat-icon.success { background: #ecfdf5; color: #10b981; }
+.stat-icon.warning { background: #fffbeb; color: #f59e0b; }
+.stat-icon.danger  { background: #fef2f2; color: #ef4444; }
+.stat-icon.info    { background: #ecfeff; color: #06b6d4; }
+.stat-icon.purple  { background: #f5f3ff; color: #8b5cf6; }
+
+/* ---------------- Buttons & Inputs ---------------- */
+.btn {
+    border-radius: var(--btn-radius);
+    font-weight: 600;
+    padding: 0.55rem 1.15rem;
+    font-size: 0.9rem;
+    transition: all var(--transition-speed);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+    border: none;
+    box-shadow: 0 2px 6px rgba(79, 70, 229, 0.25);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #4338ca 0%, #4f46e5 100%);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35);
+    transform: translateY(-1px);
+}
+
+.btn-sm {
+    padding: 0.4rem 0.85rem;
+    font-size: 0.82rem;
+    border-radius: 8px;
+}
+
+.form-control, .form-select {
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    padding: 0.6rem 0.95rem;
+    font-size: 0.92rem;
+    color: var(--text-primary);
+    background-color: var(--bg-surface);
+    transition: border-color var(--transition-speed), box-shadow var(--transition-speed);
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+}
+
+/* ---------------- Dropzone ---------------- */
+.dropzone-box {
+    border: 2px dashed #cbd5e1;
+    background-color: #f8fafc;
+    border-radius: var(--card-radius);
+    padding: 3rem 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all var(--transition-speed);
+}
+
+.dropzone-box:hover, .dropzone-box.dragover {
+    border-color: var(--primary-color);
+    background-color: #eef2ff;
+    transform: scale(1.005);
+}
+
+.dropzone-icon {
+    font-size: 2.8rem;
+    color: var(--primary-color);
+    margin-bottom: 0.75rem;
+    display: inline-block;
+    transition: transform var(--transition-speed);
+}
+
+.dropzone-box:hover .dropzone-icon {
+    transform: translateY(-4px);
+}
+
+/* ---------------- File Grid & Cards ---------------- */
+.file-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--card-radius);
+    padding: 1.15rem;
+    transition: all var(--transition-speed);
+    position: relative;
+}
+
+.file-card:hover {
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-3px);
+}
+
+.file-icon-wrapper {
+    font-size: 2.8rem;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 75px;
+    border-radius: 12px;
+    background: var(--bg-surface-secondary);
+}
+
+.folder-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--card-radius);
+    padding: 1rem 1.15rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all var(--transition-speed);
+    text-decoration: none;
+    color: var(--text-primary);
+}
+
+.folder-card:hover {
+    border-color: var(--primary-color);
+    background: #f8fafc;
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+/* ---------------- Tables ---------------- */
+.table {
+    --bs-table-bg: transparent;
+}
+
+.table thead th {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border-color);
+    padding: 0.85rem 1rem;
+}
+
+.table tbody td {
+    padding: 0.95rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.9rem;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(79, 70, 229, 0.02);
+}
+
+/* ---------------- Badges ---------------- */
+.badge {
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    padding: 0.35rem 0.65rem;
+    border-radius: 6px;
+}
+
+/* ---------------- Custom Scrollbar ---------------- */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* ---------------- Responsive / Mobile ---------------- */
+@media (max-width: 991.98px) {
+    .sidebar {
+        transform: translateX(-100%);
+        box-shadow: var(--shadow-xl);
+    }
+    .sidebar.show {
+        transform: translateX(0);
+    }
+    .main-content {
+        margin-left: 0;
+    }
+    .page-body {
+        padding: 1.25rem 1rem;
+    }
+}
+
+/* ---------------- Auth Page Professional Background & Glass Card ---------------- */
+.auth-page-wrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2.5rem 1rem;
+    position: relative;
+    overflow: hidden;
+    background-color: #0b0f19;
+    background-image: 
+        radial-gradient(at 15% 15%, rgba(79, 70, 229, 0.35) 0px, transparent 55%),
+        radial-gradient(at 85% 85%, rgba(16, 185, 129, 0.25) 0px, transparent 55%),
+        radial-gradient(at 50% 50%, rgba(139, 92, 246, 0.2) 0px, transparent 60%),
+        radial-gradient(at 80% 15%, rgba(6, 182, 212, 0.25) 0px, transparent 50%),
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+    background-position: 0 0, 0 0, 0 0, 0 0, -1px -1px, -1px -1px;
+}
+
+.auth-card-glass {
+    background: rgba(17, 24, 39, 0.75);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 20px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05);
+    color: #f8fafc;
+    position: relative;
+    z-index: 10;
+}
+
+.auth-card-glass .form-control {
+    background-color: rgba(15, 23, 42, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #f8fafc;
+}
+
+.auth-card-glass .form-control:focus {
+    background-color: rgba(15, 23, 42, 0.95);
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+    color: #ffffff;
+}
+
+.auth-card-glass .input-group-text {
+    background-color: rgba(30, 41, 59, 0.8);
+    border-color: rgba(255, 255, 255, 0.12);
+    color: #94a3b8;
+}
+
+.auth-card-glass .form-label {
+    color: #e2e8f0;
+}
+
+.auth-glow-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.auth-glow-orb-1 {
+    width: 350px;
+    height: 350px;
+    top: -50px;
+    left: -50px;
+    background: rgba(79, 70, 229, 0.4);
+}
+
+.auth-glow-orb-2 {
+    width: 300px;
+    height: 300px;
+    bottom: -50px;
+    right: -50px;
+    background: rgba(16, 185, 129, 0.3);
+}
+

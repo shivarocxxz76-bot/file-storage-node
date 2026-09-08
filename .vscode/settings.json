@@ -1,0 +1,12 @@
+{
+    "files.associations": {
+        "*.ejs": "html"
+    },
+    "emmet.includeLanguages": {
+        "ejs": "html"
+    },
+    "editor.tabSize": 4,
+    "editor.formatOnSave": true,
+    "editor.wordWrap": "on",
+    "terminal.integrated.defaultProfile.windows": "PowerShell"
+}

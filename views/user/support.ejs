@@ -1,0 +1,170 @@
+<%- include('../partials/header') %>
+<%- include('../partials/sidebar') %>
+
+<div class="main-content">
+    <%- include('../partials/topbar') %>
+
+    <main class="page-body">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-2">
+            <div>
+                <h4 class="fw-bold mb-1">Helpdesk & Support</h4>
+                <p class="text-muted small mb-0">Submit inquiry tickets, report issues, and communicate with system administrators.</p>
+            </div>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newTicketModal">
+                <i class="bi bi-plus-circle me-1"></i> Open New Ticket
+            </button>
+        </div>
+
+        <div class="row g-4">
+            <!-- Left: Ticket List -->
+            <div class="col-lg-4">
+                <div class="card card-custom p-3">
+                    <h6 class="fw-bold mb-3 px-2"><i class="bi bi-card-list text-primary me-2"></i>My Tickets (<%= myTickets.length %>)</h6>
+
+                    <% if (!myTickets || myTickets.length === 0) { %>
+                        <div class="text-center py-4 text-muted">
+                            <i class="bi bi-inbox fs-2 d-block mb-1"></i>
+                            <p class="small mb-2">No support tickets opened yet.</p>
+                            <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#newTicketModal">Create Ticket</button>
+                        </div>
+                    <% } else { %>
+                        <div class="list-group list-group-flush" style="max-height: 550px; overflow-y: auto;">
+                            <% myTickets.forEach(t => { 
+                                const isSelected = activeTicket && activeTicket._id.toString() === t._id.toString();
+                                let statusClass = 'bg-primary-subtle text-primary';
+                                if (t.status === 'in_progress') statusClass = 'bg-warning-subtle text-warning';
+                                else if (t.status === 'resolved') statusClass = 'bg-success-subtle text-success';
+                                else if (t.status === 'closed') statusClass = 'bg-secondary-subtle text-secondary';
+                            %>
+                                <a href="/support?ticket_id Antonio=<%= t._id %>" href="/support?ticket_id=<%= t._id %>" class="list-group-item list-group-item-action p-3 rounded mb-2 <%= isSelected ? 'border-primary bg-primary-subtle bg-opacity-25' : 'border' %>">
+                                    <div class="d-flex justify-content-between align-items-start mb-1">
+                                        <h6 class="fw-bold mb-0 text-truncate" style="max-width: 170px;"><%= t.subject %></h6>
+                                        <span class="badge <%= statusClass %> text-capitalize" style="font-size: 0.68rem;"><%= t.status.replace('_', ' ') %></span>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center small text-muted">
+                                        <span class="badge bg-body-secondary text-secondary text-uppercase" style="font-size: 0.65rem;"><%= t.priority %></span>
+                                        <span style="font-size: 0.72rem;"><%= timeAgo(t.createdAt) %></span>
+                                    </div>
+                                </a>
+                            <% }) %>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+
+            <!-- Right: Active Ticket Thread -->
+            <div class="col-lg-8">
+                <% if (!activeTicket) { %>
+                    <div class="card card-custom p-5 text-center text-muted">
+                        <i class="bi bi-chat-square-text display-3 text-secondary mb-3 d-block"></i>
+                        <h5 class="fw-bold">No Ticket Selected</h5>
+                        <p class="small text-muted mb-3">Choose a support ticket from the left panel or submit a new inquiry.</p>
+                        <div>
+                            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#newTicketModal">
+                                <i class="bi bi-plus-circle me-1"></i> Open a Ticket
+                            </button>
+                        </div>
+                    </div>
+                <% } else { %>
+                    <div class="card card-custom p-4">
+                        <!-- Ticket Header -->
+                        <div class="d-flex justify-content-between align-items-start border-bottom pb-3 mb-4">
+                            <div>
+                                <h5 class="fw-bold mb-1"><%= activeTicket.subject %></h5>
+                                <div class="d-flex gap-2 align-items-center small text-muted">
+                                    <span>Ticket #<%= activeTicket._id.toString().substring(18) %></span>
+                                    <span>•</span>
+                                    <span class="badge bg-secondary-subtle text-secondary text-uppercase"><%= activeTicket.priority %> Priority</span>
+                                    <span>•</span>
+                                    <span>Opened <%= timeAgo(activeTicket.createdAt) %></span>
+                                </div>
+                            </div>
+                            <span class="badge bg-<%= activeTicket.status === 'resolved' ? 'success' : (activeTicket.status === 'in_progress' ? 'warning' : 'primary') %> fs-6 px-3 py-1 text-capitalize">
+                                <%= activeTicket.status.replace('_', ' ') %>
+                            </span>
+                        </div>
+
+                        <!-- Conversation Thread -->
+                        <div class="conversation-thread mb-4" style="max-height: 400px; overflow-y: auto;">
+                            <% ticketReplies.forEach(reply => { 
+                                const isAdmin = reply.is_admin_reply;
+                            %>
+                                <div class="d-flex mb-3 gap-3 <%= isAdmin ? 'flex-row' : 'flex-row-reverse' %>">
+                                    <div class="avatar-circle <%= isAdmin ? 'bg-danger text-white' : 'bg-primary text-white' %> d-flex align-items-center justify-content-center rounded-circle flex-shrink-0" style="width: 38px; height: 38px;">
+                                        <i class="bi <%= isAdmin ? 'bi-shield-check' : 'bi-person' %>"></i>
+                                    </div>
+                                    <div class="p-3 rounded-3 <%= isAdmin ? 'bg-body-secondary border' : 'bg-primary text-white' %> shadow-sm" style="max-width: 75%;">
+                                        <div class="d-flex justify-content-between align-items-center gap-3 mb-1">
+                                            <strong class="small <%= isAdmin ? 'text-danger' : 'text-white' %>"><%= reply.user ? reply.user.full_name : (isAdmin ? 'Admin Support' : 'You') %> <%= isAdmin ? '(Support Staff)' : '' %></strong>
+                                            <span class="small <%= isAdmin ? 'text-muted' : 'text-white-50' %>" style="font-size: 0.72rem;"><%= timeAgo(reply.createdAt) %></span>
+                                        </div>
+                                        <div class="small text-break"><%= reply.message %></div>
+                                    </div>
+                                </div>
+                            <% }) %>
+                        </div>
+
+                        <!-- Reply Box -->
+                        <% if (activeTicket.status !== 'closed') { %>
+                            <form method="POST" action="/support/reply" class="border-top pt-3">
+                                <input type="hidden" name="ticket_id" value="<%= activeTicket._id %>">
+                                <div class="mb-3">
+                                    <label class="form-label small fw-semibold">Write a Reply</label>
+                                    <textarea name="message" class="form-control" rows="3" placeholder="Type your response or additional info here..." required></textarea>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <button type="submit" class="btn btn-primary btn-sm">
+                                        <i class="bi bi-send me-1"></i> Send Reply
+                                    </button>
+                                </div>
+                            </form>
+                        <% } else { %>
+                            <div class="alert alert-secondary small text-center mb-0">
+                                This support ticket is closed. If you still require help, please create a new ticket.
+                            </div>
+                        <% } %>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Modal: New Support Ticket -->
+<div class="modal fade" id="newTicketModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold"><i class="bi bi-life-preserver text-primary me-2"></i>New Support Ticket</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="/support/create">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Subject / Issue Summary</label>
+                        <input type="text" name="subject" class="form-control" placeholder="e.g. Storage upgrade issue or File encryption inquiry" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Priority Level</label>
+                        <select name="priority" class="form-select">
+                            <option value="low">Low - General Question</option>
+                            <option value="medium" selected>Medium - Functional Issue</option>
+                            <option value="high">High - Storage/Access Blocked</option>
+                            <option value="urgent">Urgent - Security Vulnerability</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Detailed Description</label>
+                        <textarea name="message" class="form-control" rows="4" placeholder="Please describe what happened, steps to reproduce, or any error messages..." required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-sm">Submit Ticket</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>
