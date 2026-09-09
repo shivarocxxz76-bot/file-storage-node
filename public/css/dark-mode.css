@@ -132,9 +132,28 @@
     border-color: #1f2937;
 }
 
+[data-bs-theme="dark"] .mobile-bottom-nav {
+    background: rgba(13, 19, 34, 0.92);
+    border-color: #1a2234;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
+}
+
+[data-bs-theme="dark"] .mobile-nav-item {
+    color: #94a3b8;
+}
+
+[data-bs-theme="dark"] .mobile-nav-item.active {
+    color: #818cf8 !important;
+}
+
+[data-bs-theme="dark"] .sidebar-backdrop {
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
 [data-bs-theme="dark"] ::-webkit-scrollbar-thumb {
     background: #334155;
 }
 [data-bs-theme="dark"] ::-webkit-scrollbar-thumb:hover {
     background: #475569;
 }
+

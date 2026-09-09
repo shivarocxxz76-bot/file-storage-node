@@ -41,7 +41,7 @@
         <!-- Filter Pills & View Mode Switch -->
         <div class="card card-custom p-3 mb-4">
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
-                <div class="d-flex flex-wrap gap-1">
+                <div class="scrollable-pills-wrap">
                     <a href="/files<%= currentFolder ? '?folder_id=' + currentFolder._id + '&' : '?' %>category=all" 
                        class="btn btn-sm <%= categoryFilter === 'all' ? 'btn-primary' : 'btn-outline-secondary' %>">All Files</a>
                     <a href="/files<%= currentFolder ? '?folder_id=' + currentFolder._id + '&' : '?' %>category=documents" 
@@ -56,7 +56,7 @@
                        class="btn btn-sm <%= categoryFilter === 'code' ? 'btn-primary' : 'btn-outline-secondary' %>"><i class="bi bi-code-slash me-1"></i>Code</a>
                 </div>
 
-                <div class="btn-group btn-group-sm">
+                <div class="btn-group btn-group-sm align-self-end align-self-md-auto">
                     <a href="?view=grid" class="btn <%= viewMode === 'grid' ? 'btn-primary' : 'btn-outline-secondary' %>">
                         <i class="bi bi-grid-3x3-gap-fill"></i>
                     </a>

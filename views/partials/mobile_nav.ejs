@@ -1,0 +1,51 @@
+<!-- Mobile Bottom App Bar (Native Mobile Experience) -->
+<nav class="mobile-bottom-nav d-lg-none">
+    <% if (user && user.role === 'admin') { %>
+        <a href="/admin/dashboard" class="mobile-nav-item <%= currentUrl === '/admin/dashboard' ? 'active' : '' %>">
+            <i class="bi bi-speedometer2"></i>
+            <span>Overview</span>
+        </a>
+        <a href="/admin/users" class="mobile-nav-item <%= currentUrl.startsWith('/admin/users') ? 'active' : '' %>">
+            <i class="bi bi-people-fill"></i>
+            <span>Users</span>
+        </a>
+        <a href="/admin/files" class="mobile-nav-item <%= currentUrl.startsWith('/admin/files') ? 'active' : '' %>">
+            <i class="bi bi-files"></i>
+            <span>Files</span>
+        </a>
+        <a href="/admin/payments" class="mobile-nav-item <%= currentUrl.startsWith('/admin/payments') ? 'active' : '' %>">
+            <i class="bi bi-credit-card-fill"></i>
+            <span>Billing</span>
+        </a>
+        <button type="button" class="mobile-nav-item border-0 bg-transparent text-secondary" id="mobileMenuTriggerBtn" onclick="toggleMobileSidebar()">
+            <i class="bi bi-grid-fill"></i>
+            <span>Menu</span>
+        </button>
+    <% } else if (user) { %>
+        <a href="/dashboard" class="mobile-nav-item <%= currentUrl === '/dashboard' ? 'active' : '' %>">
+            <i class="bi bi-house-door-fill"></i>
+            <span>Home</span>
+        </a>
+        <a href="/files" class="mobile-nav-item <%= currentUrl.startsWith('/files') ? 'active' : '' %>">
+            <i class="bi bi-folder2-open"></i>
+            <span>Files</span>
+        </a>
+        <a href="/files" class="mobile-nav-item mobile-fab-item">
+            <div class="mobile-fab-circle">
+                <i class="bi bi-cloud-arrow-up-fill"></i>
+            </div>
+            <span>Upload</span>
+        </a>
+        <a href="/shared" class="mobile-nav-item <%= currentUrl.startsWith('/shared') ? 'active' : '' %>">
+            <i class="bi bi-share-fill"></i>
+            <span>Shared</span>
+        </a>
+        <button type="button" class="mobile-nav-item border-0 bg-transparent text-secondary" id="mobileMenuTriggerBtn" onclick="toggleMobileSidebar()">
+            <i class="bi bi-grid-fill"></i>
+            <span>More</span>
+        </button>
+    <% } %>
+</nav>
+
+<!-- Mobile Sidebar Backdrop Overlay -->
+<div class="sidebar-backdrop d-lg-none" id="sidebarBackdrop" onclick="toggleMobileSidebar()"></div>

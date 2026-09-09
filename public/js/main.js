@@ -1,5 +1,5 @@
 /**
- * Main Application Script: Theme Toggle, Mobile Nav, Toast & Utilities
+ * Main Application Script: Theme Toggle, Mobile Nav & Drawer, Toast & Utilities
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -36,22 +36,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ---------------- Mobile Sidebar Toggle ----------------
     const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
-    const sidebar = document.querySelector('.sidebar');
-
-    if (sidebarToggleBtn && sidebar) {
+    if (sidebarToggleBtn) {
         sidebarToggleBtn.addEventListener('click', (e) => {
             e.stopPropagation();
-            sidebar.classList.toggle('show');
-        });
-
-        document.addEventListener('click', (e) => {
-            if (window.innerWidth < 992 && sidebar.classList.contains('show')) {
-                if (!sidebar.contains(e.target) && e.target !== sidebarToggleBtn) {
-                    sidebar.classList.remove('show');
-                }
-            }
+            toggleMobileSidebar();
         });
     }
+
+    // Close mobile drawer when clicking a link inside sidebar
+    const sidebarNavLinks = document.querySelectorAll('.sidebar .nav-link');
+    sidebarNavLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            if (window.innerWidth < 992) {
+                closeMobileSidebar();
+            }
+        });
+    });
 
     // ---------------- Auto-dismiss Alert Messages ----------------
     const alerts = document.querySelectorAll('.alert-auto-dismiss');
@@ -80,6 +80,23 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+// Mobile Sidebar Helper Functions
+function toggleMobileSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    const backdrop = document.getElementById('sidebarBackdrop');
+    if (!sidebar) return;
+
+    sidebar.classList.toggle('show');
+    if (backdrop) backdrop.classList.toggle('show');
+}
+
+function closeMobileSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    const backdrop = document.getElementById('sidebarBackdrop');
+    if (sidebar) sidebar.classList.remove('show');
+    if (backdrop) backdrop.classList.remove('show');
+}
 
 // Global Toast Notification Helper
 function showToast(message, type = 'info') {

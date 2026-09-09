@@ -9,98 +9,137 @@
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="/css/dark-mode.css">
 </head>
-<body class="auth-page-wrapper">
+<body class="bg-dark">
 
-    <!-- Ambient Glowing Orbs -->
-    <div class="auth-glow-orb auth-glow-orb-1"></div>
-    <div class="auth-glow-orb auth-glow-orb-2"></div>
+<div class="split-auth-layout">
+    <!-- Left Hero Brand Column -->
+    <div class="split-auth-hero">
+        <!-- Top Logo -->
+        <div class="d-flex align-items-center gap-3">
+            <div class="split-auth-brand-logo">
+                <i class="bi bi-shield-lock-fill text-white fs-4"></i>
+            </div>
+            <div>
+                <h5 class="fw-bold mb-0 text-white"><%= appName %></h5>
+                <span class="text-white-50 small text-uppercase" style="font-size: 0.68rem; letter-spacing: 0.12em;">SECURE CLOUD PLATFORM</span>
+            </div>
+        </div>
 
-    <div class="container position-relative" style="z-index: 10;">
-        <div class="row justify-content-center">
-            <div class="col-12 col-md-8 col-lg-5">
-                
-                <!-- Brand Logo & Header -->
-                <div class="text-center mb-4">
-                    <a href="/" class="d-inline-flex align-items-center text-primary text-decoration-none fw-bold fs-3 mb-2">
-                        <i class="bi bi-shield-lock-fill me-2 fs-2 text-primary"></i> 
-                        <span class="text-white"><%= appName %></span>
-                    </a>
-                    <p class="text-white-50 small mb-0">Sign in to your AES-256 encrypted cloud storage</p>
-                </div>
+        <!-- Bottom Narrative -->
+        <div class="split-auth-hero-content">
+            <div class="mb-3">
+                <span class="split-auth-pill">
+                    <span class="text-teal me-2" style="font-size: 0.9rem;">●</span> AES-256 Encryption at Rest
+                </span>
+            </div>
 
-                <!-- Glassmorphism Card -->
-                <div class="card auth-card-glass p-4 p-md-5">
-                    <%- include('../partials/flash') %>
+            <h1 class="display-5 fw-bold text-white mb-3" style="letter-spacing: -0.02em;">
+                Access your <br>
+                <span class="text-teal">encrypted files.</span>
+            </h1>
 
-                    <form method="POST" action="/auth/login">
-                        <div class="mb-3">
-                            <label for="email" class="form-label small fw-semibold">Email Address</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                                <input type="email" class="form-control" name="email" id="email" required placeholder="name@domain.com" autofocus>
-                            </div>
-                        </div>
+            <p class="text-white-50 fs-6 mb-4" style="max-width: 520px; line-height: 1.6;">
+                Sign in to manage your files securely with role-based access control, timed expiring links, and high-speed encrypted streaming.
+            </p>
 
-                        <div class="mb-3">
-                            <label for="password" class="form-label small fw-semibold mb-1">Password</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-key"></i></span>
-                                <input type="password" class="form-control" name="password" id="password" required placeholder="••••••••">
-                                <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('password')">
-                                    <i class="bi bi-eye" id="password-toggle-icon"></i>
-                                </button>
-                            </div>
-                        </div>
-
-                        <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold mt-3">
-                            <i class="bi bi-box-arrow-in-right me-1"></i> Sign In
-                        </button>
-                    </form>
-
-                    <!-- Quick Demo Login Helper -->
-                    <div class="mt-4 pt-3 border-top border-white border-opacity-10 text-center">
-                        <p class="text-white-50 small fw-semibold mb-2">⚡ Quick Fill Demo Credentials</p>
-                        <div class="d-flex justify-content-center">
-                            <button type="button" class="btn btn-sm btn-outline-primary px-3" onclick="fillDemo('user@filestorage.local', 'User@12345')">
-                                <i class="bi bi-person me-1"></i> Demo User (Instant Fill)
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="mt-4 text-center">
-                        <span class="text-white-50 small">Don't have an account? </span>
-                        <a href="/auth/register" class="text-primary fw-semibold small text-decoration-none">Create Free Account</a>
-                    </div>
-                </div>
-
-                <!-- Back to Home -->
-                <div class="text-center mt-4">
-                    <a href="/" class="text-white-50 small text-decoration-none">
-                        <i class="bi bi-arrow-left me-1"></i> Back to Homepage
-                    </a>
-                </div>
+            <div class="d-flex flex-wrap">
+                <span class="split-auth-feature-badge">
+                    <i class="bi bi-lock-fill text-teal me-2"></i> AES-256-CBC
+                </span>
+                <span class="split-auth-feature-badge">
+                    <i class="bi bi-lightning-charge-fill text-teal me-2"></i> High-Speed Sync
+                </span>
+                <span class="split-auth-feature-badge">
+                    <i class="bi bi-link-45deg text-teal me-2"></i> Expiring Links
+                </span>
+                <span class="split-auth-feature-badge">
+                    <i class="bi bi-shield-check text-teal me-2"></i> Forensic Audit
+                </span>
             </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-    function fillDemo(email, pass) {
-        document.getElementById('email').value = email;
-        document.getElementById('password').value = pass;
-    }
+    <!-- Right Form Column -->
+    <div class="split-auth-form-side">
+        <div class="split-auth-form-container">
+            <div class="mb-4">
+                <h2 class="fw-bold text-white mb-1">Sign in</h2>
+                <p class="text-white-50 small mb-0">Welcome back! Please enter your details.</p>
+            </div>
 
-    function togglePasswordVisibility(fieldId) {
-        const field = document.getElementById(fieldId);
-        const icon = document.getElementById('password-toggle-icon');
-        if (field.type === 'password') {
-            field.type = 'text';
-            icon.className = 'bi bi-eye-slash';
-        } else {
-            field.type = 'password';
-            icon.className = 'bi bi-eye';
-        }
+            <%- include('../partials/flash') %>
+
+            <form method="POST" action="/auth/login">
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email address</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                        <input type="email" class="form-control" name="email" id="email" required placeholder="you@example.com" autofocus>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                        <input type="password" class="form-control" name="password" id="password" required placeholder="••••••••">
+                        <button class="btn btn-outline-secondary border-start-0" type="button" onclick="togglePasswordVisibility('password')" style="border-radius: 0 12px 12px 0;">
+                            <i class="bi bi-eye" id="password-toggle-icon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-teal-gradient w-100 mt-3">
+                    Sign in to account &rarr;
+                </button>
+            </form>
+
+            <!-- Quick Demo Login Helper -->
+            <div class="mt-4 pt-3 border-top border-white border-opacity-10 text-center">
+                <p class="text-white-50 small fw-semibold mb-2">⚡ Quick Fill Demo Credentials</p>
+                <div class="d-flex justify-content-center">
+                    <button type="button" class="btn btn-sm btn-outline-primary px-3 text-teal border-secondary" onclick="fillDemo('user@filestorage.local', 'User@12345')">
+                        <i class="bi bi-person me-1"></i> Demo User (Instant Fill)
+                    </button>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center my-4">
+                <hr class="flex-grow-1 border-secondary border-opacity-50 my-0">
+                <span class="px-3 text-white-50" style="font-size: 0.68rem; letter-spacing: 0.15em;">ACCOUNT</span>
+                <hr class="flex-grow-1 border-secondary border-opacity-50 my-0">
+            </div>
+
+            <p class="text-center text-white-50 small mb-4">
+                Don't have an account? 
+                <a href="/auth/register" class="text-teal fw-semibold text-decoration-none ms-1">Create Account</a>
+            </p>
+
+            <div class="text-center text-white-50" style="font-size: 0.75rem;">
+                <i class="bi bi-shield-check text-teal me-1"></i> Protected connection &bull; <%= appName %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function fillDemo(email, pass) {
+    document.getElementById('email').value = email;
+    document.getElementById('password').value = pass;
+}
+
+function togglePasswordVisibility(fieldId) {
+    const field = document.getElementById(fieldId);
+    const icon = document.getElementById('password-toggle-icon');
+    if (field.type === 'password') {
+        field.type = 'text';
+        icon.className = 'bi bi-eye-slash';
+    } else {
+        field.type = 'password';
+        icon.className = 'bi bi-eye';
     }
-    </script>
+}
+</script>
 </body>
 </html>
