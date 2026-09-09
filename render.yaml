@@ -1,0 +1,17 @@
+﻿services:
+  - type: web
+    name: securevault-cloud
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: APP_NAME
+        value: SecureVault
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: ENCRYPTION_MASTER_KEY
+        generateValue: true

@@ -8,7 +8,7 @@ const mongoose = require('mongoose');
 let memServer = null;
 
 const connectDB = async () => {
-    const uri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/file_storage_db';
+    const uri = process.env.MONGO_URI || process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/file_storage_db';
 
     // 1. Try connecting to local / external MongoDB instance
     try {
