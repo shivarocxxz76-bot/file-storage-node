@@ -1,0 +1,7 @@
+﻿node_modules/
+.env
+secure_storage/avatars/*
+!secure_storage/avatars/.gitkeep
+secure_storage/files/*
+!secure_storage/files/.gitkeep
+*.log

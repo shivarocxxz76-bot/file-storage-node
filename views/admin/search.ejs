@@ -1,0 +1,215 @@
+<%- include('../partials/header') %>
+<- include('../partials/admin_sidebar') %>
+
+<div class="main-content">
+    <- include('../partials/topbar') %>
+
+    <main class="page-body">
+        <!-- Search Header -->
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+            <div>
+                <h4 class="fw-bold mb-1"><i class="bi bi-search text-primary me-2"></i>Admin Global Search</h4>
+                <p class="text-muted small mb-0">Universal system search across all users, encrypted files, folders, and billing transactions.</p>
+            </div>
+            <div>
+                <form action="/admin/search" method="GET" class="d-flex gap-2">
+                    <div class="input-group" style="min-width: 280px;">
+                        <span class="input-group-text bg-body-secondary border-end-0"><i class="bi bi-search text-muted"></i></span>
+                        <input type="text" name="q" class="form-control bg-body-secondary border-start-0 ps-0" placeholder="Search users, files, payments..." value="<= query %>" required autofocus>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Search</button>
+                </form>
+            </div>
+        </div>
+
+        <% if (query) { %>
+            <!-- Search Results Summary Bar -->
+            <div class="card card-custom p-3 mb-4">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                    <div>
+                        <span class="text-muted small">Search Results for:</span>
+                        <strong class="text-primary ms-1">"<= query %>"</strong>
+                        <span class="badge bg-primary-subtle text-primary ms-2"><= totalResults %> match(es) found</span>
+                    </div>
+                    <div class="d-flex gap-2 small">
+                        <span class="badge bg-info-subtle text-info"><= users.length %> Users</span>
+                        <span class="badge bg-primary-subtle text-primary"><= files.length %> Files</span>
+                        <span class="badge bg-warning-subtle text-warning"><= folders.length %> Folders</span>
+                        <span class="badge bg-success-subtle text-success"><= payments.length %> Payments</span>
+                    </div>
+                </div>
+            </div>
+
+            <% if (totalResults === 0) { %>
+                <div class="card card-custom text-center py-5">
+                    <i class="bi bi-search display-4 text-muted mb-3"></i>
+                    <h5>No Records Found</h5>
+                    <p class="text-muted small mb-0">No users, files, folders, or payment transactions matched "<= query %>". Try a different keyword.</p>
+                </div>
+            <% } else { %>
+                <!-- 1. Users Section -->
+                <% if (users && users.length > 0) { %>
+                    <div class="card card-custom p-4 mb-4">
+                        <h6 class="fw-bold mb-3"><i class="bi bi-people-fill text-info me-2"></i>Matched Users (<= users.length %>)</h6>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>User</th>
+                                        <th>Role</th>
+                                        <th>Plan</th>
+                                        <th>Status</th>
+                                        <th>Storage Used</th>
+                                        <th class="text-end">Action</th>
+                                    </tr>
+                            </thead>
+                            <tbody>
+                                <% users.forEach(u => { %>
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center fw-bold me-2" style="width: 34px; height: 34px;">
+                                                    <= (u.full_name || 'U').charAt(0).toUpperCase() %>
+                                                </div>
+                                                <div>
+                                                    <div class="fw-semibold small"><= u.full_name %></div>
+                                                    <div class="text-muted" style="font-size: 0.75rem;"><= u.email %></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td><span class="badge bg-<= u.role === 'admin' ? 'purple' : 'primary' %>-subtle text-<= u.role === 'admin' ? 'purple' : 'primary' %>"><= u.role %></span></td>
+                                        <td><span class="badge bg-secondary-subtle text-secondary"><= u.storage_plan ? u.storage_plan.plan_name : 'Free Starter' %></span></td>
+                                        <td><span class="badge bg-<= u.status === 'active' ? 'success' : 'danger' %>"><= u.status %></span></td>
+                                        <td class="small text-muted"><= formatBytes(u.storage_used_bytes) %></td>
+                                        <td class="text-end">
+                                            <a href="/admin/users" class="btn btn-sm btn-outline-primary py-0 px-2"><i class="bi bi-gear me-1"></i>Manage</a>
+                                        </td>
+                                    </tr>
+                                <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            <% } %>
+
+            <!-- 2. Files Section -->
+            <% if (files && files.length > 0) { %>
+                <div class="card card-custom p-4 mb-4">
+                    <h6 class="fw-bold mb-3"><i class="bi bi-file-earmark-lock2-fill text-primary me-2"></i>Matched Encrypted Files (<= files.length %>)</h6>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>File Name</th>
+                                    <th>Owner</th>
+                                    <th>Folder</th>
+                                    <th>Size</th>
+                                    <th>Uploaded</th>
+                                    <th class="text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% files.forEach(f => { 
+                                    const iconData = getFileIcon(f.file_extension);
+                                %>
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <i class="bi <= iconData.icon %> <= iconData.color %> fs-4 me-2"></i>
+                                                <span class="fw-medium text-truncate" style="max-width: 240px;" title="<= f.original_name %>">
+                                                    <= fnoriginal_name %>
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-primary-subtle text-primary"><= f.user ? f.user.full_name : 'Unknown' %></span>
+                                        </td>
+                                        <td><span class="text-muted small"><= f.folder ? f.folder.folder_name : 'Root' %></span></td>
+                                        <td class="small text-muted"><= formatBytes(f.file_size) %></td>
+                                        <td class="small text-muted"><= timeAgo(f.createdAt) %></td>
+                                        <td class="text-end">
+                                            <a href="/files/download?file_id<= f._id %>" class="btn btn-sm btn-outline-secondary py-0 px-2" title="Download Decrypted"><i class="bi bi-download"></i></a>
+                                        </td>
+                                    </tr>
+                                <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            <% } %>
+
+            <!-- 3. Folders Section -->
+            <% if (folders && folders.length > 0) { %>
+                <div class="card card-custom p-4 mb-4">
+                    <h6 class="fw-bold mb-3"><i class="bi bi-folder-fill text-warning me-2"></i>Matched Folders (<= folders.length %>)</h6>
+                    <div class="row g-3">
+                        <% folders.forEach(fold => { %>
+                            <div class="col-12 col-sm-6 col-md-4">
+                                <div class="folder-card d-flex align-items-center justify-content-between p-3">
+                                    <div class="d-flex align-items-center text-truncate me-2">
+                                        <i class="bi bi-folder-fill fs-3 me-2" style="color: <= fold.color_code || '#f59e0b' %>"></i>
+                                        <div class="text-truncate">
+                                            <div class="fw-bold small text-truncate"><= fold.folder_name %></div>
+                                            <div class="text-muted" style="font-size: 0.72rem;">Owner: <= fold.user ? fold.user.full_name : 'System' %></div>
+                                        </div>
+                                    </div>
+                                    <span class="badge bg-body-secondary text-muted small"><= timeAgo(fold.createdAt) %></span>
+                                </div>
+                            </div>
+                        <% }) %>
+                    </div>
+                </div>
+            <% } %>
+
+            <!-- 4. Payments Section -->
+            <% if (payments && payments.length > 0) { %>
+                <div class="card card-custom p-4 mb-4">
+                    <h6 class="fw-bold mb-3"><i class="bi bi-credit-card-fill text-success me-2"></i>Matched Payments & Billing (<= payments.length %>)</h6>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Transaction ID</th>
+                                    <th>User</th>
+                                    <th>Plan</th>
+                                    <th>Amount</th>
+                                    <th>Method</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% payments.forEach(p => { %>
+                                    <tr>
+                                        <td><code class="fw-bold text-primary"><= p.transaction_id %></code></td>
+                                        <td>
+                                            <div class="fw-medium small"><= p.user ? p.user.full_name : 'Deleted User' %></div>
+                                            <div class="text-muted" style="font-size: 0.72rem;"><= p.user ? p.user.email : '' %></div>
+                                        </td>
+                                        <td><span class="badge bg-secondary-subtle text-secondary"><= p.plan ? p.plan.plan_name : 'Storage Quota' %></span></td>
+                                        <td class="fw-bold text-success">$<= p.amount.toFixed(2) %></td>
+                                        <td><span class="badge bg-body-secondary text-capitalize"><= p.payment_method %></span></td>
+                                        <td><span class="badge bg-<= p.status === 'completed' ? 'success' : (p.status === 'failed' ? 'danger' : 'warning') %>"><= p.status %></span></td>
+                                        <td class="small text-muted"><= timeAgo(p.payment_date) %></td>
+                                    </tr>
+                                <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            <% } %>
+        <% } %>
+        <% } else { %>
+            <!-- Empty State Prompt -->
+            <div class="card card-custom text-center py-5">
+                <i class="bi bi-search display-3 text-primary mb-3"></i>
+                <h5>Universal Admin Intelligence Search</h5>
+                <p class="text-muted small mx-auto" style="max-width: 480px;">
+                    Search across all user accounts, encrypted files, folders, transaction IDs, or payment methods in real time.
+                </p>
+            </div>
+        <% } %>
+    </main>
+</div>
+
+<- include('../partials/footer') %>

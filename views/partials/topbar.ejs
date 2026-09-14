@@ -6,12 +6,23 @@
         </button>
 
         <!-- Global Search Box -->
-        <div class="input-group d-none d-md-flex" style="max-width: 380px;">
-            <span class="input-group-text bg-body-secondary border-end-0 text-muted">
-                <i class="bi bi-search"></i>
-            </span>
-            <input type="text" id="liveSearchInput" class="form-control bg-body-secondary border-start-0 ps-0" placeholder="Search files, folders or tickets...">
-        </div>
+        <% if (user && user.role === 'admin') { %>
+            <form action="/admin/search" method="GET" class="d-none d-md-flex" style="max-width: 380px;">
+                <div class="input-group">
+                    <span class="input-group-text bg-body-secondary border-end-0 text-muted">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" name="q" id="liveSearchInput" class="form-control bg-body-secondary border-start-0 ps-0" placeholder="Global search users, files, payments..." value="<%= typeof query !== 'undefined' ? query : '' %>">
+                </div>
+            </form>
+        <% } else { %>
+            <div class="input-group d-none d-md-flex" style="max-width: 380px;">
+                <span class="input-group-text bg-body-secondary border-end-0 text-muted">
+                    <i class="bi bi-search"></i>
+                </span>
+                <input type="text" id="liveSearchInput" class="form-control bg-body-secondary border-start-0 ps-0" placeholder="Search files, folders or tickets...">
+            </div>
+        <% } %>
     </div>
 
     <div class="d-flex align-items-center gap-2 gap-md-3">

@@ -95,45 +95,32 @@
         </div>
 
         <div class="row g-4">
-            <!-- Left Column: Quick Upload + Recent Files -->
+            <!-- Left Column: Recent Files Table (AES-256 Protected) -->
             <div class="col-lg-8">
-                <!-- Dropzone Box -->
-                <div class="card card-custom p-4 mb-4">
-                    <h6 class="fw-bold mb-3"><i class="bi bi-cloud-arrow-up text-primary me-2"></i>Quick Upload (AES-256 Auto Encrypted)</h6>
-                    <div class="dropzone-box" id="fileDropzone">
-                        <i class="bi bi-cloud-arrow-up dropzone-icon"></i>
-                        <h6 class="fw-semibold mb-1">Drag and drop your files here</h6>
-                        <p class="text-muted small mb-3">or click anywhere to browse from your computer</p>
-                        <span class="badge bg-body-secondary text-muted border">Supports PDF, Office, Photos, Zip, Code, Media</span>
-                        <input type="file" id="fileUploadInput" multiple class="d-none">
-                    </div>
-
-                    <div id="uploadProgressContainer" class="d-none mt-3">
-                        <div class="d-flex justify-content-between small text-muted mb-1">
-                            <span id="uploadStatusText">Encrypting & uploading files...</span>
-                        </div>
-                        <div class="progress" style="height: 8px;">
-                            <div id="uploadProgressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-primary" role="progressbar" style="width: 0%"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Recent Files Table -->
-                <div class="card card-custom p-4">
+                <div class="card card-custom p-4 h-100">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h6 class="fw-bold mb-0"><i class="bi bi-clock-history text-primary me-2"></i>Recent Files</h6>
-                        <a href="/files" class="text-primary text-decoration-none small fw-semibold">View All Files &rarr;</a>
+                        <div>
+                            <h6 class="fw-bold mb-0"><i class="bi bi-clock-history text-primary me-2"></i>Recent Encrypted Files</h6>
+                            <p class="text-muted small mb-0">Your latest uploaded and protected documents</p>
+                        </div>
+                        <a href="/files" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-folder2-open me-1"></i> View All Files &rarr;
+                        </a>
                     </div>
 
                     <% if (!recentFiles || recentFiles.length === 0) { %>
-                        <div class="text-center py-4 text-muted">
-                            <i class="bi bi-inbox fs-2 d-block mb-2"></i>
-                            No files uploaded yet. Drag files into the box above to store securely!
+                        <div class="text-center py-5 text-muted">
+                            <i class="bi bi-shield-check fs-1 d-block mb-3 text-primary"></i>
+                            <h6>No files uploaded yet</h6>
+                            <p class="small text-muted mb-3">Click "+ Upload File" in the sidebar to securely store your files with AES-256 encryption.</p>
+                            <button type="button" class="btn btn-primary btn-sm" onclick="triggerSidebarUpload()">
+                                <i class="bi bi-cloud-arrow-up-fill me-1"></i> Upload First File
+                            </button>
                         </div>
                     <% } else { %>
                         <div class="table-responsive">
                             <table class="table table-hover align-middle mb-0">
-                                <thead class="table-light">
+                                <thead>
                                     <tr>
                                         <th>Name</th>
                                         <th>Folder</th>
@@ -164,18 +151,18 @@
                                             <td class="small text-muted"><%= timeAgo(file.createdAt) %></td>
                                             <td class="text-end">
                                                 <div class="btn-group btn-group-sm">
-                                                    <button type="button" class="btn btn-outline-secondary" onclick="previewFile('<%= file._id %>')" title="Preview">
+                                                    <button type="button" class="btn btn-outline-secondary py-0 px-2" onclick="previewFile('<%= file._id %>')" title="Preview">
                                                         <i class="bi bi-eye"></i>
                                                     </button>
-                                                    <a href="/files/download?file_id=<%= file._id %>" class="btn btn-outline-secondary" title="Download">
+                                                    <a href="/files/download?file_id=<%= file._id %>" class="btn btn-outline-secondary py-0 px-2" title="Download Decrypted">
                                                         <i class="bi bi-download"></i>
                                                     </a>
-                                                    <button type="button" class="btn btn-outline-secondary" data-file-id="<%= file._id %>" data-file-name="<%= file.original_name %>" onclick="openShareModal(this.dataset.fileId, this.dataset.fileName)" title="Share">
+                                                    <button type="button" class="btn btn-outline-secondary py-0 px-2" data-file-id="<%= file._id %>" data-file-name="<%= file.original_name %>" onclick="openShareModal(this.dataset.fileId, this.dataset.fileName)" title="Share">
                                                         <i class="bi bi-share"></i>
                                                     </button>
                                                     <form method="POST" action="/files/delete" class="d-inline" onsubmit="return confirm('Move file to Recycle Bin?')">
                                                         <input type="hidden" name="file_id" value="<%= file._id %>">
-                                                        <button type="submit" class="btn btn-outline-danger" title="Delete">
+                                                        <button type="submit" class="btn btn-outline-danger py-0 px-2" title="Delete">
                                                             <i class="bi bi-trash3"></i>
                                                         </button>
                                                     </form>
@@ -190,19 +177,27 @@
                 </div>
             </div>
 
-            <!-- Right Column: Storage Donut Chart + Security Activity Log -->
+            <!-- Right Column: Quick Security Activity & Storage Status -->
             <div class="col-lg-4">
                 <div class="card card-custom p-4 mb-4">
-                    <h6 class="fw-bold mb-3"><i class="bi bi-pie-chart text-primary me-2"></i>Storage Breakdown</h6>
-                    <div style="height: 220px; position: relative;">
-                        <canvas id="userStorageChart"></canvas>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="fw-bold mb-0"><i class="bi bi-hdd-network text-primary me-2"></i>Storage Plan</h6>
+                        <span class="badge bg-primary-subtle text-primary"><%= user.storage_plan ? user.storage_plan.plan_name : 'Free Starter' %></span>
                     </div>
-                    <div class="text-center mt-3 pt-3 border-top">
-                        <div class="small text-muted mb-1">Current Plan: <strong class="text-primary"><%= user.storage_plan ? user.storage_plan.plan_name : 'Free Starter' %></strong></div>
-                        <a href="/storage-plans" class="btn btn-outline-primary btn-sm w-100">
-                            <i class="bi bi-arrow-up-circle me-1"></i> Upgrade Storage Plan
-                        </a>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between small text-muted mb-1">
+                            <span>Used: <strong><%= storageUsedFormatted %></strong></span>
+                            <span>Limit: <strong><%= storageLimitFormatted %></strong></span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar <%= storagePercentage >= 80 ? (storagePercentage >= 100 ? 'bg-danger' : 'bg-warning') : 'bg-primary' %>" 
+                                 role="progressbar" 
+                                 style="width: <%= Math.min(100, storagePercentage) %>%;"></div>
+                        </div>
                     </div>
+                    <a href="/storage-plans" class="btn btn-outline-primary btn-sm w-100">
+                        <i class="bi bi-arrow-up-circle me-1"></i> Upgrade Storage Plan
+                    </a>
                 </div>
 
                 <div class="card card-custom p-4">
@@ -230,15 +225,5 @@
         </div>
     </main>
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    const storageChartData = {
-        labels: <%- JSON.stringify(chartLabels) %>,
-        values: <%- JSON.stringify(chartValues) %>
-    };
-    renderUserStorageChart('userStorageChart', storageChartData);
-});
-</script>
 
 <%- include('../partials/footer') %>

@@ -11,6 +11,15 @@
         <span><%= appName %></span>
     </a>
 
+    <!-- Direct Upload Action -->
+    <div class="px-3 pt-3 pb-1">
+        <button type="button" class="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2 py-2 shadow-sm" onclick="triggerSidebarUpload()">
+            <i class="bi bi-cloud-arrow-up-fill fs-5"></i>
+            <span class="fw-bold">Upload File</span>
+        </button>
+        <input type="file" id="sidebarUploadFileInput" multiple class="d-none" onchange="handleSidebarFileUpload(this)">
+    </div>
+
     <!-- Nav Items -->
     <nav class="sidebar-nav">
         <div class="sidebar-heading">Main</div>

@@ -59,8 +59,6 @@ function renderAdminUploadsChart(canvasId, uploadData) {
     const ctx = document.getElementById(canvasId);
     if (!ctx || !uploadData) return;
 
-    const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
-
     new Chart(ctx, {
         type: 'bar',
         data: {
@@ -68,7 +66,9 @@ function renderAdminUploadsChart(canvasId, uploadData) {
             datasets: [{
                 label: 'Files Uploaded',
                 data: uploadData.counts,
-                backgroundColor: '#4f46e5',
+                backgroundColor: 'rgba(6, 182, 212, 0.85)',
+                borderColor: '#06b6d4',
+                borderWidth: 1,
                 borderRadius: 6
             }]
         },
@@ -81,12 +81,12 @@ function renderAdminUploadsChart(canvasId, uploadData) {
             scales: {
                 y: {
                     beginAtZero: true,
-                    grid: { color: isDark ? '#1f2937' : '#f1f5f9' },
-                    ticks: { color: isDark ? '#94a3b8' : '#64748b', font: { family: 'Plus Jakarta Sans' } }
+                    grid: { color: 'rgba(255, 255, 255, 0.08)' },
+                    ticks: { color: '#94a3b8', font: { family: 'Plus Jakarta Sans' } }
                 },
                 x: {
                     grid: { display: false },
-                    ticks: { color: isDark ? '#94a3b8' : '#64748b', font: { family: 'Plus Jakarta Sans' } }
+                    ticks: { color: '#94a3b8', font: { family: 'Plus Jakarta Sans' } }
                 }
             }
         }
@@ -98,8 +98,6 @@ function renderAdminRevenueChart(canvasId, revenueData) {
     const ctx = document.getElementById(canvasId);
     if (!ctx || !revenueData) return;
 
-    const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
-
     new Chart(ctx, {
         type: 'line',
         data: {
@@ -108,11 +106,14 @@ function renderAdminRevenueChart(canvasId, revenueData) {
                 label: 'Revenue ($)',
                 data: revenueData.amounts,
                 borderColor: '#10b981',
-                backgroundColor: 'rgba(16, 185, 129, 0.12)',
+                backgroundColor: 'rgba(16, 185, 129, 0.18)',
+                borderWidth: 2,
                 fill: true,
                 tension: 0.35,
                 pointBackgroundColor: '#10b981',
-                pointRadius: 4
+                pointBorderColor: '#ffffff',
+                pointRadius: 4,
+                pointHoverRadius: 6
             }]
         },
         options: {
@@ -124,16 +125,16 @@ function renderAdminRevenueChart(canvasId, revenueData) {
             scales: {
                 y: {
                     beginAtZero: true,
-                    grid: { color: isDark ? '#1f2937' : '#f1f5f9' },
+                    grid: { color: 'rgba(255, 255, 255, 0.08)' },
                     ticks: {
-                        color: isDark ? '#94a3b8' : '#64748b',
+                        color: '#94a3b8',
                         font: { family: 'Plus Jakarta Sans' },
                         callback: (v) => '$' + v
                     }
                 },
                 x: {
                     grid: { display: false },
-                    ticks: { color: isDark ? '#94a3b8' : '#64748b', font: { family: 'Plus Jakarta Sans' } }
+                    ticks: { color: '#94a3b8', font: { family: 'Plus Jakarta Sans' } }
                 }
             }
         }

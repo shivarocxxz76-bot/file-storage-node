@@ -38,4 +38,8 @@ router.get('/logs', isAdmin, adminController.getLogs);
 router.get('/settings', isAdmin, adminController.getSettings);
 router.post('/settings/save', isAdmin, adminController.saveSettings);
 
+// Global Omnibus Search (Users, Files, Folders, Payments)
+router.get('/search', isAdmin, adminController.getGlobalSearch);
+router.get('/api/search', isAdmin, adminController.apiGlobalSearch);
+
 module.exports = router;

@@ -132,3 +132,48 @@ function showToast(message, type = 'info') {
         toastEl.remove();
     });
 }
+
+// Sidebar Upload Handler
+function triggerSidebarUpload() {
+    const fileUploadInput = document.getElementById('fileUploadInput');
+    if (fileUploadInput) {
+        fileUploadInput.click();
+    } else {
+        const sidebarInput = document.getElementById('sidebarUploadFileInput');
+        if (sidebarInput) sidebarInput.click();
+    }
+}
+
+async function handleSidebarFileUpload(input) {
+    if (!input.files || input.files.length === 0) return;
+    
+    const formData = new FormData();
+    for (let i = 0; i < input.files.length; i++) {
+        formData.append('files', input.files[i]);
+    }
+    
+    const currentFolderInput = document.getElementById('currentFolderId');
+    if (currentFolderInput && currentFolderInput.value) {
+        formData.append('folder_id', currentFolderInput.value);
+    }
+
+    showToast('Encrypting & uploading ' + input.files.length + ' file(s)...', 'info');
+
+    try {
+        const response = await fetch('/files/upload', {
+            method: 'POST',
+            body: formData
+        });
+        const result = await response.json();
+        if (result.success) {
+            showToast(result.message || 'Files encrypted & uploaded successfully!', 'success');
+            setTimeout(() => {
+                window.location.href = '/files';
+            }, 800);
+        } else {
+            showToast(result.message || 'Upload failed.', 'danger');
+        }
+    } catch (err) {
+        showToast('Error uploading files: ' + err.message, 'danger');
+    }
+}
