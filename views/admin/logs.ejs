@@ -39,19 +39,19 @@
                                 let badgeClass = 'bg-primary-subtle text-primary';
                                 if (log.action_type.includes('DELETE') || log.action_type.includes('PURGE')) badgeClass = 'bg-danger-subtle text-danger';
                                 else if (log.action_type.includes('LOGIN') || log.action_type.includes('REGISTER')) badgeClass = 'bg-success-subtle text-success';
-                                else if (log.action_type.includes('ADMIN')) badgeClass = 'bg-dark-subtle text-dark border';
+                                else if (log.action_type.includes('ADMIN')) badgeClass = 'bg-dark-subtle text-light border';
                                 else if (log.action_type.includes('SHARE')) badgeClass = 'bg-warning-subtle text-warning';
                             %>
                                 <tr>
                                     <td>
-                                        <div class="fw-semibold text-dark"><%= log.user ? log.user.full_name : 'System / Guest' %></div>
+                                        <div class="fw-semibold text-light"><%= log.user ? log.user.full_name : 'System / Guest' %></div>
                                         <small class="text-muted"><%= log.user ? log.user.email : 'N/A' %></small>
                                     </td>
                                     <td>
                                         <span class="badge <%= badgeClass %> font-monospace"><%= log.action_type %></span>
                                     </td>
                                     <td>
-                                        <div class="text-dark small"><%= log.description %></div>
+                                        <div class="text-light small"><%= log.description %></div>
                                     </td>
                                     <td>
                                         <span class="badge bg-body-secondary text-secondary text-uppercase" style="font-size: 0.68rem;"><%= log.target_type %></span>

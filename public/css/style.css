@@ -40,7 +40,7 @@
 
 body {
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-    background: linear-gradient(135deg, rgba(6, 10, 22, 0.88) 0%, rgba(8, 14, 30, 0.82) 40%, rgba(4, 7, 16, 0.92) 100%),
+    background: linear-gradient(135deg, rgba(6, 10, 22, 0.65) 0%, rgba(8, 14, 30, 0.50) 45%, rgba(4, 7, 16, 0.72) 100%),
                 url('/images/cyber-bg.jpg') no-repeat center center fixed;
     background-size: cover;
     color: var(--text-primary);
@@ -618,7 +618,9 @@ code, pre, .font-monospace {
 .split-auth-layout {
     min-height: 100vh;
     display: flex;
-    background-color: #060913;
+    background: linear-gradient(135deg, rgba(6, 10, 22, 0.55) 0%, rgba(8, 14, 30, 0.45) 45%, rgba(4, 7, 16, 0.65) 100%),
+                url('/images/cyber-lock.jpg') no-repeat center center fixed !important;
+    background-size: cover !important;
     overflow-x: hidden;
 }
 
@@ -630,13 +632,10 @@ code, pre, .font-monospace {
     flex-direction: column;
     justify-content: space-between;
     padding: 3rem 3.5rem;
-    background-color: #070d1c;
-    background-image: 
-        linear-gradient(to bottom, rgba(6, 9, 19, 0.82) 0%, rgba(6, 9, 19, 0.45) 45%, rgba(6, 9, 19, 0.95) 100%),
-        url('/images/auth-bg.jpg');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
+    background: rgba(7, 13, 28, 0.45);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-right: 1px solid rgba(255, 255, 255, 0.10);
     overflow: hidden;
 }
 
@@ -698,18 +697,27 @@ code, pre, .font-monospace {
 /* Right Form Section */
 .split-auth-form-side {
     flex: 0.95;
-    background-color: #090e1a;
+    background: rgba(8, 13, 25, 0.65);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 3rem 2.5rem;
     position: relative;
-    border-left: 1px solid rgba(255, 255, 255, 0.08);
+    border-left: 1px solid rgba(255, 255, 255, 0.10);
 }
 
 .split-auth-form-container {
     width: 100%;
     max-width: 440px;
+    background: rgba(13, 20, 36, 0.78);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 20px;
+    padding: 2.25rem 2rem;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
 }
 
 .split-auth-form-side .form-control {

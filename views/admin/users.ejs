@@ -43,7 +43,7 @@
                                             <%= u.full_name.charAt(0).toUpperCase() %>
                                         </div>
                                         <div>
-                                            <div class="fw-semibold text-dark"><%= u.full_name %> <% if (isSelf) { %><span class="badge bg-secondary-subtle text-secondary" style="font-size: 0.65rem;">You</span><% } %></div>
+                                            <div class="fw-semibold text-light"><%= u.full_name %> <% if (isSelf) { %><span class="badge bg-secondary-subtle text-secondary" style="font-size: 0.65rem;">You</span><% } %></div>
                                             <small class="text-muted"><%= u.email %></small>
                                         </div>
                                     </div>
@@ -54,7 +54,7 @@
                                     </span>
                                 </td>
                                 <td>
-                                    <div class="small fw-semibold text-dark"><%= u.storage_plan ? u.storage_plan.plan_name : 'Free Starter' %></div>
+                                    <div class="small fw-semibold text-light"><%= u.storage_plan ? u.storage_plan.plan_name : 'Free Starter' %></div>
                                     <div class="progress my-1" style="height: 5px; width: 120px;">
                                         <div class="progress-bar <%= percentage > 90 ? 'bg-danger' : 'bg-primary' %>" style="width: <%= percentage %>%"></div>
                                     </div>

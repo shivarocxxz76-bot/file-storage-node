@@ -7,8 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const themeToggleBtn = document.getElementById('themeToggleBtn');
     const htmlElement = document.documentElement;
 
-    const savedTheme = localStorage.getItem('sv_theme') || 
-                       (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    const savedTheme = localStorage.getItem('sv_theme') || 'dark';
     setTheme(savedTheme);
 
     if (themeToggleBtn) {

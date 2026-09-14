@@ -43,7 +43,7 @@
                                 <i class="bi <%= iconClass %> fs-4 mt-1"></i>
                                 <div>
                                     <div class="d-flex align-items-center gap-2 mb-1">
-                                        <h6 class="fw-bold mb-0 <%= !notif.is_read ? 'text-primary' : 'text-dark' %>"><%= notif.title %></h6>
+                                        <h6 class="fw-bold mb-0 <%= !notif.is_read ? 'text-primary' : 'text-light' %>"><%= notif.title %></h6>
                                         <% if (!notif.is_read) { %>
                                             <span class="badge bg-primary rounded-pill" style="font-size: 0.65rem;">NEW</span>
                                         <% } %>

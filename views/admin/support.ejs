@@ -97,7 +97,7 @@
                                     <div class="avatar-circle <%= isAdmin ? 'bg-danger text-white' : 'bg-primary text-white' %> d-flex align-items-center justify-content-center rounded-circle flex-shrink-0" style="width: 38px; height: 38px;">
                                         <i class="bi <%= isAdmin ? 'bi-shield-check' : 'bi-person' %>"></i>
                                     </div>
-                                    <div class="p-3 rounded-3 <%= isAdmin ? 'bg-danger-subtle text-dark border border-danger-subtle' : 'bg-body-secondary border' %> shadow-sm" style="max-width: 75%;">
+                                    <div class="p-3 rounded-3 <%= isAdmin ? 'bg-danger-subtle text-light border border-danger-subtle' : 'bg-body-secondary border' %> shadow-sm" style="max-width: 75%;">
                                         <div class="d-flex justify-content-between align-items-center gap-3 mb-1">
                                             <strong class="small <%= isAdmin ? 'text-danger fw-bold' : 'text-primary' %>">
                                                 <%= reply.user ? reply.user.full_name : (isAdmin ? 'Admin' : 'User') %> <%= isAdmin ? '(Administrator Response)' : '' %>

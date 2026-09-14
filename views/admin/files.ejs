@@ -44,7 +44,7 @@
                                         <div class="d-flex align-items-center">
                                             <i class="bi <%= iconData.icon %> <%= iconData.color %> fs-4 me-2"></i>
                                             <div>
-                                                <div class="fw-semibold text-dark text-truncate" style="max-width: 220px;" title="<%= file.original_name %>">
+                                                <div class="fw-semibold text-light text-truncate" style="max-width: 220px;" title="<%= file.original_name %>">
                                                     <%= file.original_name %>
                                                 </div>
                                                 <small class="text-muted"><%= file.mime_type %></small>
@@ -52,7 +52,7 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="fw-medium text-dark"><%= file.user ? file.user.full_name : 'Unknown' %></div>
+                                        <div class="fw-medium text-light"><%= file.user ? file.user.full_name : 'Unknown' %></div>
                                         <small class="text-muted"><%= file.user ? file.user.email : 'N/A' %></small>
                                     </td>
                                     <td class="small fw-semibold"><%= formatBytes(file.file_size) %></td>
