@@ -119,8 +119,10 @@ exports.downloadFile = async (req, res) => {
                 return res.status(404).send('File not found or has been deleted.');
             }
 
-            // Access check: Owner, Admin, or Shared user with download permission
-            let hasAccess = (userId && (file.user.toString() === userId.toString() || userRole === 'admin'));
+            // Access check: Owner or Shared user with download permission
+            // Zero-Knowledge Architecture: Administrators CANNOT download private files of users
+            const isOwner = userId && (file.user.toString() === userId.toString());
+            let hasAccess = isOwner;
             if (!hasAccess && userId) {
                 const share = await SharedFile.findOne({
                     file: file._id,
@@ -133,6 +135,9 @@ exports.downloadFile = async (req, res) => {
             }
 
             if (!hasAccess) {
+                if (userRole === 'admin') {
+                    return res.status(403).send('Access Denied: Zero-Knowledge Privacy Architecture. Administrators cannot download private user files.');
+                }
                 return res.status(403).send('Access denied. You do not have permission to download this file.');
             }
         } else if (shareToken) {
@@ -192,7 +197,9 @@ exports.previewFile = async (req, res) => {
             return isRaw ? res.status(404).send('File not found') : res.json({ success: false, message: 'File not found' });
         }
 
-        let hasAccess = (userId && (file.user.toString() === userId.toString() || userRole === 'admin'));
+        // Zero-Knowledge Architecture: Administrators CANNOT preview private files of users
+        const isOwner = userId && (file.user.toString() === userId.toString());
+        let hasAccess = isOwner;
         if (!hasAccess && userId) {
             const share = await SharedFile.findOne({ file: file._id, shared_with: userId });
             if (share && (!share.expires_at || new Date(share.expires_at) > new Date())) {
@@ -201,6 +208,11 @@ exports.previewFile = async (req, res) => {
         }
 
         if (!hasAccess) {
+            if (userRole === 'admin') {
+                return isRaw 
+                    ? res.status(403).send('Access Denied: Zero-Knowledge Privacy Architecture. Administrators cannot view private user files.')
+                    : res.json({ success: false, message: 'Access Denied: Zero-Knowledge Privacy Architecture. Administrators cannot view private user files.' });
+            }
             return isRaw ? res.status(403).send('Access denied') : res.json({ success: false, message: 'Access denied' });
         }
 

@@ -8,16 +8,16 @@
         <!-- Search Header -->
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
             <div>
-                <h4 class="fw-bold mb-1"><i class="bi bi-search text-primary me-2"></i>Admin Global Search</h4>
-                <p class="text-muted small mb-0">Universal system search across all users, encrypted files, folders, and billing transactions.</p>
+                <h4 class="fw-bold mb-1"><i class="bi bi-search text-primary me-2"></i>Admin Global Search & User Intelligence</h4>
+                <p class="text-muted small mb-0">Universal search across accounts, encrypted file metadata, directories, financial ledgers, and forensic audit logs.</p>
             </div>
             <div>
                 <form action="/admin/search" method="GET" class="d-flex gap-2">
-                    <div class="input-group" style="min-width: 280px;">
+                    <div class="input-group" style="min-width: 320px;">
                         <span class="input-group-text bg-body-secondary border-end-0"><i class="bi bi-search text-muted"></i></span>
-                        <input type="text" name="q" class="form-control bg-body-secondary border-start-0 ps-0" placeholder="Search users, files, payments..." value="<%= query %>" required autofocus>
+                        <input type="text" name="q" class="form-control bg-body-secondary border-start-0 ps-0" placeholder="Search user name, email, file, txn ID..." value="<%= query %>" required autofocus>
                     </div>
-                    <button type="submit" class="btn btn-primary">Search</button>
+                    <button type="submit" class="btn btn-primary px-3">Search</button>
                 </form>
             </div>
         </div>
@@ -29,184 +29,468 @@
                     <div>
                         <span class="text-muted small">Search Results for:</span>
                         <strong class="text-primary ms-1">"<%= query %>"</strong>
-                        <span class="badge bg-primary-subtle text-primary ms-2"><%= totalResults %> match(es) found</span>
+                        <span class="badge bg-primary-subtle text-primary ms-2"><%= totalResults %> item(s) found</span>
                     </div>
-                    <div class="d-flex gap-2 small">
-                        <span class="badge bg-info-subtle text-info"><%= users.length %> Users</span>
-                        <span class="badge bg-primary-subtle text-primary"><%= files.length %> Files</span>
-                        <span class="badge bg-warning-subtle text-warning"><%= folders.length %> Folders</span>
-                        <span class="badge bg-success-subtle text-success"><%= payments.length %> Payments</span>
+                    <div class="d-flex flex-wrap gap-2 small">
+                        <span class="badge bg-info-subtle text-info"><i class="bi bi-people me-1"></i><%= users.length %> Users</span>
+                        <span class="badge bg-primary-subtle text-primary"><i class="bi bi-file-earmark-lock me-1"></i><%= files.length %> Files</span>
+                        <span class="badge bg-warning-subtle text-warning"><i class="bi bi-folder me-1"></i><%= folders.length %> Folders</span>
+                        <span class="badge bg-success-subtle text-success"><i class="bi bi-credit-card me-1"></i><%= payments.length %> Payments</span>
+                        <% if (typeof activityLogs !== 'undefined' && activityLogs && activityLogs.length > 0) { %>
+                            <span class="badge bg-secondary-subtle text-secondary"><i class="bi bi-activity me-1"></i><%= activityLogs.length %> Logs</span>
+                        <% } %>
                     </div>
                 </div>
             </div>
 
-            <% if (totalResults === 0) { %>
+            <% if (totalResults === 0 && (!activityLogs || activityLogs.length === 0)) { %>
                 <div class="card card-custom text-center py-5">
                     <i class="bi bi-search display-4 text-muted mb-3"></i>
                     <h5>No Records Found</h5>
-                    <p class="text-muted small mb-0">No users, files, folders, or payment transactions matched "<%= query %>". Try a different keyword.</p>
+                    <p class="text-muted small mb-0">No users, files, folders, or payment records matched "<%= query %>". Try searching with a different name or email.</p>
                 </div>
+            <% } else if (primaryUser) { %>
+                <!-- ============================================================== -->
+                <!-- 360° USER INTELLIGENCE DOSSIER (Rendered when User is matched) -->
+                <!-- ============================================================== -->
+
+                <!-- Multiple User Match Switcher -->
+                <% if (users.length > 1) { %>
+                    <div class="card card-custom p-3 mb-4 border-info-subtle">
+                        <div class="d-flex flex-wrap align-items-center gap-2">
+                            <span class="small fw-bold text-info"><i class="bi bi-person-lines-fill me-1"></i>Multiple Users Found:</span>
+                            <% users.forEach(u => { 
+                                const isCurrent = u._id.toString() === primaryUser._id.toString();
+                            %>
+                                <a href="/admin/search?q=<%= encodeURIComponent(u.email) %>" class="btn btn-sm <%= isCurrent ? 'btn-primary' : 'btn-outline-secondary' %> rounded-pill py-1 px-3" style="font-size: 0.78rem;">
+                                    <i class="bi bi-person me-1"></i><%= u.full_name %> <span class="opacity-75">(<%= u.email %>)</span>
+                                </a>
+                            <% }) %>
+                        </div>
+                    </div>
+                <% } %>
+
+                <!-- Zero-Knowledge Privacy Architecture Security Banner -->
+                <div class="alert alert-dark border-secondary-subtle d-flex align-items-center gap-3 mb-4 p-3 shadow-sm rounded-3">
+                    <div class="p-2 rounded-circle bg-info-subtle text-info fs-4 flex-shrink-0">
+                        <i class="bi bi-shield-lock-fill"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="fw-bold text-light d-flex align-items-center gap-2">
+                            Zero-Knowledge Privacy Architecture Enforced
+                            <span class="badge bg-success-subtle text-success" style="font-size: 0.65rem;">AES-256 Active</span>
+                        </div>
+                        <div class="text-muted small">
+                            Full administrative oversight is active for account state, quotas, metadata, and audit events. Under Zero-Knowledge encryption, private file contents cannot be previewed or downloaded by administrators. Decrypted access remains strictly exclusive to the user.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- User Hero Card -->
+                <div class="card card-custom p-4 mb-4">
+                    <div class="row g-4 align-items-center">
+                        <div class="col-lg-6">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center fw-bold fs-3 shadow-sm flex-shrink-0" style="width: 64px; height: 64px;">
+                                    <%= (primaryUser.full_name || 'U').charAt(0).toUpperCase() %>
+                                </div>
+                                <div class="overflow-hidden">
+                                    <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                                        <h5 class="fw-bold mb-0 text-truncate text-light"><%= primaryUser.full_name %></h5>
+                                        <span class="badge bg-<%= primaryUser.role === 'admin' ? 'danger' : 'primary' %>-subtle text-<%= primaryUser.role === 'admin' ? 'danger' : 'primary' %> text-uppercase" style="font-size: 0.7rem;">
+                                            <%= primaryUser.role %>
+                                        </span>
+                                        <span class="badge bg-<%= primaryUser.status === 'active' ? 'success' : (primaryUser.status === 'suspended' ? 'danger' : 'warning') %>" style="font-size: 0.7rem;">
+                                            <%= primaryUser.status %>
+                                        </span>
+                                    </div>
+                                    <div class="text-muted small mb-2"><i class="bi bi-envelope me-1"></i><%= primaryUser.email %></div>
+                                    <div class="d-flex flex-wrap gap-2 text-muted" style="font-size: 0.75rem;">
+                                        <span><i class="bi bi-calendar-check me-1"></i>Joined <%= timeAgo(primaryUser.createdAt || new Date()) %></span>
+                                        <span>•</span>
+                                        <span><i class="bi bi-hdd-network me-1"></i>Plan: <strong class="text-light"><%= primaryUser.storage_plan ? primaryUser.storage_plan.plan_name : 'Free Starter' %></strong></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Storage Quota Gauge -->
+                            <% 
+                                const storageUsed = primaryUser.storage_used_bytes || 0;
+                                const storageLimit = primaryUser.storage_limit_bytes || 524288000;
+                                const usagePercent = storageLimit > 0 ? Math.min(100, Math.round((storageUsed / storageLimit) * 100)) : 0;
+                            %>
+                            <div class="mt-4 p-3 rounded-3 bg-body-secondary border border-secondary-subtle">
+                                <div class="d-flex justify-content-between align-items-center mb-1 small">
+                                    <span class="fw-semibold"><i class="bi bi-pie-chart-fill text-primary me-1"></i>Storage Allocation</span>
+                                    <span class="fw-bold <%= usagePercent > 85 ? 'text-danger' : 'text-primary' %>"><%= usagePercent %>% (<%= formatBytes(storageUsed) %> / <%= formatBytes(storageLimit) %>)</span>
+                                </div>
+                                <div class="progress" style="height: 7px;">
+                                    <div class="progress-bar <%= usagePercent > 85 ? 'bg-danger' : (usagePercent > 60 ? 'bg-warning' : 'bg-primary') %>" style="width: <%= usagePercent %>%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 4 KPI Metrics Cards -->
+                        <div class="col-lg-6">
+                            <div class="row g-3">
+                                <div class="col-6">
+                                    <div class="p-3 rounded-3 bg-body-secondary border border-secondary-subtle text-center">
+                                        <i class="bi bi-file-earmark-lock2-fill fs-3 text-primary mb-1 d-block"></i>
+                                        <div class="fw-bold fs-4 text-light"><%= primaryUserFiles.length %></div>
+                                        <div class="text-muted small">Files Stored</div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="p-3 rounded-3 bg-body-secondary border border-secondary-subtle text-center">
+                                        <i class="bi bi-folder-fill fs-3 text-warning mb-1 d-block"></i>
+                                        <div class="fw-bold fs-4 text-light"><%= primaryUserFolders.length %></div>
+                                        <div class="text-muted small">Folders</div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="p-3 rounded-3 bg-body-secondary border border-secondary-subtle text-center">
+                                        <i class="bi bi-credit-card-2-front-fill fs-3 text-success mb-1 d-block"></i>
+                                        <div class="fw-bold fs-4 text-light"><%= primaryUserPayments.length %></div>
+                                        <div class="text-muted small">Transactions</div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="p-3 rounded-3 bg-body-secondary border border-secondary-subtle text-center">
+                                        <i class="bi bi-shield-check fs-3 text-info mb-1 d-block"></i>
+                                        <div class="fw-bold fs-4 text-light"><%= primaryUserLogs.length %></div>
+                                        <div class="text-muted small">Security Logs</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 360° Detailed Tabs -->
+                <div class="card card-custom p-4 mb-4">
+                    <ul class="nav nav-tabs border-secondary-subtle mb-4" id="userDossierTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active fw-semibold" id="files-tab" data-bs-toggle="tab" data-bs-target="#user-files" type="button" role="tab">
+                                <i class="bi bi-files text-primary me-2"></i>User Files (<%= primaryUserFiles.length %>)
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link fw-semibold" id="folders-tab" data-bs-toggle="tab" data-bs-target="#user-folders" type="button" role="tab">
+                                <i class="bi bi-folder text-warning me-2"></i>Folders (<%= primaryUserFolders.length %>)
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link fw-semibold" id="billing-tab" data-bs-toggle="tab" data-bs-target="#user-billing" type="button" role="tab">
+                                <i class="bi bi-credit-card text-success me-2"></i>Billing & Invoices (<%= primaryUserPayments.length %>)
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link fw-semibold" id="security-tab" data-bs-toggle="tab" data-bs-target="#user-security" type="button" role="tab">
+                                <i class="bi bi-shield-lock text-info me-2"></i>Audit Timeline (<%= primaryUserLogs.length %>)
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content" id="userDossierTabsContent">
+                        <!-- Tab 1: User Files -->
+                        <div class="tab-pane fade show active" id="user-files" role="tabpanel">
+                            <% if (primaryUserFiles.length === 0) { %>
+                                <div class="text-center py-4 text-muted">
+                                    <i class="bi bi-folder-x fs-2 mb-2 d-block"></i>
+                                    <p class="small mb-0">No files uploaded by this user yet.</p>
+                                </div>
+                            <% } else { %>
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>File Name</th>
+                                                <th>Folder</th>
+                                                <th>Size</th>
+                                                <th>Uploaded</th>
+                                                <th>Privacy & Security</th>
+                                                <th class="text-end">Moderation</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <% primaryUserFiles.forEach(f => { 
+                                                const iconData = getFileIcon(f.file_extension || '');
+                                            %>
+                                                <tr>
+                                                    <td>
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="bi <%= iconData.icon %> <%= iconData.color %> fs-4 me-2"></i>
+                                                            <span class="fw-medium text-truncate text-light" style="max-width: 250px;" title="<%= f.original_name %>">
+                                                                <%= f.original_name %>
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                    <td><span class="text-muted small"><%= f.folder ? f.folder.folder_name : 'Root' %></span></td>
+                                                    <td class="small text-muted"><%= formatBytes(f.file_size || 0) %></td>
+                                                    <td class="small text-muted"><%= timeAgo(f.createdAt || new Date()) %></td>
+                                                    <td>
+                                                        <span class="badge bg-body-secondary text-secondary border border-secondary-subtle d-inline-flex align-items-center gap-1 py-1 px-2" title="Zero-Knowledge Privacy: Encrypted at rest, only owner can decrypt" style="font-size: 0.72rem;">
+                                                            <i class="bi bi-shield-lock-fill text-info"></i> Encrypted (Owner Only)
+                                                        </span>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <form method="POST" action="/admin/files/force-delete" class="d-inline" onsubmit="return confirm('PERMANENT QUARANTINE / DELETION: Are you sure you want to force delete this file from storage?')">
+                                                            <input type="hidden" name="file_id" value="<%= f._id %>">
+                                                            <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2" title="Force Delete / Moderate">
+                                                                <i class="bi bi-trash3-fill"></i>
+                                                            </button>
+                                                        </form>
+                                                    </td>
+                                                </tr>
+                                            <% }) %>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            <% } %>
+                        </div>
+
+                        <!-- Tab 2: User Folders -->
+                        <div class="tab-pane fade" id="user-folders" role="tabpanel">
+                            <% if (primaryUserFolders.length === 0) { %>
+                                <div class="text-center py-4 text-muted">
+                                    <i class="bi bi-folder-x fs-2 mb-2 d-block"></i>
+                                    <p class="small mb-0">No folders created by this user.</p>
+                                </div>
+                            <% } else { %>
+                                <div class="row g-3">
+                                    <% primaryUserFolders.forEach(fold => { %>
+                                        <div class="col-12 col-sm-6 col-md-4">
+                                            <div class="p-3 rounded-3 bg-body-secondary border border-secondary-subtle d-flex align-items-center justify-content-between">
+                                                <div class="d-flex align-items-center text-truncate me-2">
+                                                    <i class="bi bi-folder-fill fs-2 me-2" style="color: <%= fold.color_code || '#f59e0b' %>"></i>
+                                                    <div class="text-truncate">
+                                                        <div class="fw-bold small text-light text-truncate"><%= fold.folder_name %></div>
+                                                        <div class="text-muted" style="font-size: 0.72rem;">Created <%= timeAgo(fold.createdAt || new Date()) %></div>
+                                                    </div>
+                                                </div>
+                                                <span class="badge bg-dark text-muted border border-secondary-subtle small">Directory</span>
+                                            </div>
+                                        </div>
+                                    <% }) %>
+                                </div>
+                            <% } %>
+                        </div>
+
+                        <!-- Tab 3: Billing & Invoices -->
+                        <div class="tab-pane fade" id="user-billing" role="tabpanel">
+                            <% if (primaryUserPayments.length === 0) { %>
+                                <div class="text-center py-4 text-muted">
+                                    <i class="bi bi-credit-card-2-back fs-2 mb-2 d-block"></i>
+                                    <p class="small mb-0">No billing or upgrade transactions recorded for this account.</p>
+                                </div>
+                            <% } else { %>
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Transaction ID</th>
+                                                <th>Plan</th>
+                                                <th>Amount</th>
+                                                <th>Payment Method</th>
+                                                <th>Status</th>
+                                                <th>Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <% primaryUserPayments.forEach(p => { %>
+                                                <tr>
+                                                    <td><code class="fw-bold text-primary"><%= p.transaction_id %></code></td>
+                                                    <td><span class="badge bg-secondary-subtle text-secondary"><%= p.plan ? p.plan.plan_name : 'Storage Quota' %></span></td>
+                                                    <td class="fw-bold text-success">$<%= (p.amount != null ? Number(p.amount) : 0).toFixed(2) %></td>
+                                                    <td><span class="badge bg-body-secondary text-capitalize"><%= p.payment_method %></span></td>
+                                                    <td><span class="badge bg-<%= p.status === 'completed' ? 'success' : (p.status === 'failed' ? 'danger' : 'warning') %>"><%= p.status %></span></td>
+                                                    <td class="small text-muted"><%= timeAgo(p.payment_date || p.createdAt || new Date()) %></td>
+                                                </tr>
+                                            <% }) %>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            <% } %>
+                        </div>
+
+                        <!-- Tab 4: Security & Forensic Logs -->
+                        <div class="tab-pane fade" id="user-security" role="tabpanel">
+                            <% if (primaryUserLogs.length === 0) { %>
+                                <div class="text-center py-4 text-muted">
+                                    <i class="bi bi-shield-slash fs-2 mb-2 d-block"></i>
+                                    <p class="small mb-0">No activity or security logs recorded for this account.</p>
+                                </div>
+                            <% } else { %>
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Action</th>
+                                                <th>Description</th>
+                                                <th>Resource</th>
+                                                <th>IP Address</th>
+                                                <th>Timestamp</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <% primaryUserLogs.forEach(log => { %>
+                                                <tr>
+                                                    <td>
+                                                        <span class="badge bg-primary-subtle text-primary font-monospace" style="font-size: 0.7rem;">
+                                                            <%= log.action_type %>
+                                                        </span>
+                                                    </td>
+                                                    <td class="small text-light"><%= log.description %></td>
+                                                    <td><span class="badge bg-body-secondary text-secondary text-capitalize" style="font-size: 0.68rem;"><%= log.resource_type || 'system' %></span></td>
+                                                    <td class="small font-monospace text-muted"><%= log.ip_address || '127.0.0.1' %></td>
+                                                    <td class="small text-muted"><%= timeAgo(log.createdAt || new Date()) %></td>
+                                                </tr>
+                                            <% }) %>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+
             <% } else { %>
-                <!-- 1. Users Section -->
-                <% if (users && users.length > 0) { %>
+                <!-- ============================================================== -->
+                <!-- GENERIC MULTI-CATEGORY SEARCH RESULTS (When no single user matched) -->
+                <!-- ============================================================== -->
+
+                <!-- Files Section -->
+                <% if (files && files.length > 0) { %>
                     <div class="card card-custom p-4 mb-4">
-                        <h6 class="fw-bold mb-3"><i class="bi bi-people-fill text-info me-2"></i>Matched Users (<%= users.length %>)</h6>
+                        <h6 class="fw-bold mb-3"><i class="bi bi-file-earmark-lock2-fill text-primary me-2"></i>Matched Encrypted Files (<%= files.length %>)</h6>
                         <div class="table-responsive">
                             <table class="table table-hover align-middle mb-0">
                                 <thead>
                                     <tr>
-                                        <th>User</th>
-                                        <th>Role</th>
-                                        <th>Plan</th>
-                                        <th>Status</th>
-                                        <th>Storage Used</th>
-                                        <th class="text-end">Action</th>
+                                        <th>File Name</th>
+                                        <th>Owner</th>
+                                        <th>Folder</th>
+                                        <th>Size</th>
+                                        <th>Uploaded</th>
+                                        <th>Privacy & Security</th>
+                                        <th class="text-end">Moderation</th>
                                     </tr>
-                            </thead>
-                            <tbody>
-                                <% users.forEach(u => { %>
-                                    <tr>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center fw-bold me-2" style="width: 34px; height: 34px;">
-                                                    <%= (u.full_name || 'U').charAt(0).toUpperCase() %>
+                                </thead>
+                                <tbody>
+                                    <% files.forEach(f => { 
+                                        const iconData = getFileIcon(f.file_extension || '');
+                                    %>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <i class="bi <%= iconData.icon %> <%= iconData.color %> fs-4 me-2"></i>
+                                                    <span class="fw-medium text-truncate text-light" style="max-width: 240px;" title="<%= f.original_name %>">
+                                                        <%= f.original_name %>
+                                                    </span>
                                                 </div>
-                                                <div>
-                                                    <div class="fw-semibold small"><%= u.full_name %></div>
-                                                    <div class="text-muted" style="font-size: 0.75rem;"><%= u.email %></div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td><span class="badge bg-<%= u.role === 'admin' ? 'purple' : 'primary' %>-subtle text-<%= u.role === 'admin' ? 'purple' : 'primary' %>"><%= u.role %></span></td>
-                                        <td><span class="badge bg-secondary-subtle text-secondary"><%= u.storage_plan ? u.storage_plan.plan_name : 'Free Starter' %></span></td>
-                                        <td><span class="badge bg-<%= u.status === 'active' ? 'success' : 'danger' %>"><%= u.status %></span></td>
-                                        <td class="small text-muted"><%= formatBytes(u.storage_used_bytes || 0) %></td>
-                                        <td class="text-end">
-                                            <a href="/admin/users" class="btn btn-sm btn-outline-primary py-0 px-2"><i class="bi bi-gear me-1"></i>Manage</a>
-                                        </td>
-                                    </tr>
-                                <% }) %>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            <% } %>
-
-            <!-- 2. Files Section -->
-            <% if (files && files.length > 0) { %>
-                <div class="card card-custom p-4 mb-4">
-                    <h6 class="fw-bold mb-3"><i class="bi bi-file-earmark-lock2-fill text-primary me-2"></i>Matched Encrypted Files (<%= files.length %>)</h6>
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead>
-                                <tr>
-                                    <th>File Name</th>
-                                    <th>Owner</th>
-                                    <th>Folder</th>
-                                    <th>Size</th>
-                                    <th>Uploaded</th>
-                                    <th class="text-end">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <% files.forEach(f => { 
-                                    const iconData = getFileIcon(f.file_extension || '');
-                                %>
-                                    <tr>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <i class="bi <%= iconData.icon %> <%= iconData.color %> fs-4 me-2"></i>
-                                                <span class="fw-medium text-truncate" style="max-width: 240px;" title="<%= f.original_name %>">
-                                                    <%= f.original_name %>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-primary-subtle text-primary"><%= f.user ? f.user.full_name : 'Unknown' %></span>
+                                            </td>
+                                            <td><span class="text-muted small"><%= f.folder ? f.folder.folder_name : 'Root' %></span></td>
+                                            <td class="small text-muted"><%= formatBytes(f.file_size || 0) %></td>
+                                            <td class="small text-muted"><%= timeAgo(f.createdAt || new Date()) %></td>
+                                            <td>
+                                                <span class="badge bg-body-secondary text-secondary border border-secondary-subtle d-inline-flex align-items-center gap-1 py-1 px-2" title="Zero-Knowledge Privacy: Encrypted at rest, only owner can decrypt" style="font-size: 0.72rem;">
+                                                    <i class="bi bi-shield-lock-fill text-info"></i> Encrypted (Owner Only)
                                                 </span>
+                                            </td>
+                                            <td class="text-end">
+                                                <form method="POST" action="/admin/files/force-delete" class="d-inline" onsubmit="return confirm('PERMANENT QUARANTINE / DELETION: Are you sure you want to force delete this file from storage?')">
+                                                    <input type="hidden" name="file_id" value="<%= f._id %>">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2" title="Force Delete / Moderate">
+                                                        <i class="bi bi-trash3-fill"></i>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    <% }) %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                <% } %>
+
+                <!-- Folders Section -->
+                <% if (folders && folders.length > 0) { %>
+                    <div class="card card-custom p-4 mb-4">
+                        <h6 class="fw-bold mb-3"><i class="bi bi-folder-fill text-warning me-2"></i>Matched Folders (<%= folders.length %>)</h6>
+                        <div class="row g-3">
+                            <% folders.forEach(fold => { %>
+                                <div class="col-12 col-sm-6 col-md-4">
+                                    <div class="p-3 rounded-3 bg-body-secondary border border-secondary-subtle d-flex align-items-center justify-content-between">
+                                        <div class="d-flex align-items-center text-truncate me-2">
+                                            <i class="bi bi-folder-fill fs-3 me-2" style="color: <%= fold.color_code || '#f59e0b' %>"></i>
+                                            <div class="text-truncate">
+                                                <div class="fw-bold small text-light text-truncate"><%= fold.folder_name %></div>
+                                                <div class="text-muted" style="font-size: 0.72rem;">Owner: <%= fold.user ? fold.user.full_name : 'System' %></div>
                                             </div>
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-primary-subtle text-primary"><%= f.user ? f.user.full_name : 'Unknown' %></span>
-                                        </td>
-                                        <td><span class="text-muted small"><%= f.folder ? f.folder.folder_name : 'Root' %></span></td>
-                                        <td class="small text-muted"><%= formatBytes(f.file_size || 0) %></td>
-                                        <td class="small text-muted"><%= timeAgo(f.createdAt || new Date()) %></td>
-                                        <td class="text-end">
-                                            <a href="/files/download?file_id=<%= f._id %>" class="btn btn-sm btn-outline-secondary py-0 px-2" title="Download Decrypted"><i class="bi bi-download"></i></a>
-                                        </td>
-                                    </tr>
-                                <% }) %>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            <% } %>
-
-            <!-- 3. Folders Section -->
-            <% if (folders && folders.length > 0) { %>
-                <div class="card card-custom p-4 mb-4">
-                    <h6 class="fw-bold mb-3"><i class="bi bi-folder-fill text-warning me-2"></i>Matched Folders (<%= folders.length %>)</h6>
-                    <div class="row g-3">
-                        <% folders.forEach(fold => { %>
-                            <div class="col-12 col-sm-6 col-md-4">
-                                <div class="folder-card d-flex align-items-center justify-content-between p-3">
-                                    <div class="d-flex align-items-center text-truncate me-2">
-                                        <i class="bi bi-folder-fill fs-3 me-2" style="color: <%= fold.color_code || '#f59e0b' %>"></i>
-                                        <div class="text-truncate">
-                                            <div class="fw-bold small text-truncate"><%= fold.folder_name %></div>
-                                            <div class="text-muted" style="font-size: 0.72rem;">Owner: <%= fold.user ? fold.user.full_name : 'System' %></div>
                                         </div>
+                                        <span class="badge bg-body-secondary text-muted small"><%= timeAgo(fold.createdAt || new Date()) %></span>
                                     </div>
-                                    <span class="badge bg-body-secondary text-muted small"><%= timeAgo(fold.createdAt || new Date()) %></span>
                                 </div>
-                            </div>
-                        <% }) %>
+                            <% }) %>
+                        </div>
                     </div>
-                </div>
-            <% } %>
+                <% } %>
 
-            <!-- 4. Payments Section -->
-            <% if (payments && payments.length > 0) { %>
-                <div class="card card-custom p-4 mb-4">
-                    <h6 class="fw-bold mb-3"><i class="bi bi-credit-card-fill text-success me-2"></i>Matched Payments & Billing (<%= payments.length %>)</h6>
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead>
-                                <tr>
-                                    <th>Transaction ID</th>
-                                    <th>User</th>
-                                    <th>Plan</th>
-                                    <th>Amount</th>
-                                    <th>Method</th>
-                                    <th>Status</th>
-                                    <th>Date</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <% payments.forEach(p => { %>
+                <!-- Payments Section -->
+                <% if (payments && payments.length > 0) { %>
+                    <div class="card card-custom p-4 mb-4">
+                        <h6 class="fw-bold mb-3"><i class="bi bi-credit-card-fill text-success me-2"></i>Matched Payments & Billing (<%= payments.length %>)</h6>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
                                     <tr>
-                                        <td><code class="fw-bold text-primary"><%= p.transaction_id %></code></td>
-                                        <td>
-                                            <div class="fw-medium small"><%= p.user ? p.user.full_name : 'Deleted User' %></div>
-                                            <div class="text-muted" style="font-size: 0.72rem;"><%= p.user ? p.user.email : '' %></div>
-                                        </td>
-                                        <td><span class="badge bg-secondary-subtle text-secondary"><%= p.plan ? p.plan.plan_name : 'Storage Quota' %></span></td>
-                                        <td class="fw-bold text-success">$<%= (p.amount != null ? Number(p.amount) : 0).toFixed(2) %></td>
-                                        <td><span class="badge bg-body-secondary text-capitalize"><%= p.payment_method %></span></td>
-                                        <td><span class="badge bg-<%= p.status === 'completed' ? 'success' : (p.status === 'failed' ? 'danger' : 'warning') %>"><%= p.status %></span></td>
-                                        <td class="small text-muted"><%= timeAgo(p.payment_date || p.createdAt || new Date()) %></td>
+                                        <th>Transaction ID</th>
+                                        <th>User</th>
+                                        <th>Plan</th>
+                                        <th>Amount</th>
+                                        <th>Method</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
                                     </tr>
-                                <% }) %>
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    <% payments.forEach(p => { %>
+                                        <tr>
+                                            <td><code class="fw-bold text-primary"><%= p.transaction_id %></code></td>
+                                            <td>
+                                                <div class="fw-medium small text-light"><%= p.user ? p.user.full_name : 'Deleted User' %></div>
+                                                <div class="text-muted" style="font-size: 0.72rem;"><%= p.user ? p.user.email : '' %></div>
+                                            </td>
+                                            <td><span class="badge bg-secondary-subtle text-secondary"><%= p.plan ? p.plan.plan_name : 'Storage Quota' %></span></td>
+                                            <td class="fw-bold text-success">$<%= (p.amount != null ? Number(p.amount) : 0).toFixed(2) %></td>
+                                            <td><span class="badge bg-body-secondary text-capitalize"><%= p.payment_method %></span></td>
+                                            <td><span class="badge bg-<%= p.status === 'completed' ? 'success' : (p.status === 'failed' ? 'danger' : 'warning') %>"><%= p.status %></span></td>
+                                            <td class="small text-muted"><%= timeAgo(p.payment_date || p.createdAt || new Date()) %></td>
+                                        </tr>
+                                    <% }) %>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                </div>
+                <% } %>
             <% } %>
-        <% } %>
         <% } else { %>
             <!-- Empty State Prompt -->
             <div class="card card-custom text-center py-5">
                 <i class="bi bi-search display-3 text-primary mb-3"></i>
                 <h5>Universal Admin Intelligence Search</h5>
-                <p class="text-muted small mx-auto" style="max-width: 480px;">
-                    Search across all user accounts, encrypted files, folders, transaction IDs, or payment methods in real time.
+                <p class="text-muted small mx-auto" style="max-width: 520px;">
+                    Search any user's name or email to generate an instant 360° Intelligence Dossier containing their profile, storage quota usage, encrypted files, folders, billing history, and forensic security events.
                 </p>
+                <div class="d-flex justify-content-center gap-2 mt-3">
+                    <span class="badge bg-body-secondary text-secondary">Search by User Name</span>
+                    <span class="badge bg-body-secondary text-secondary">Search by Email</span>
+                    <span class="badge bg-body-secondary text-secondary">Search by File Name</span>
+                    <span class="badge bg-body-secondary text-secondary">Search by Transaction ID</span>
+                </div>
             </div>
         <% } %>
     </main>

@@ -469,7 +469,7 @@ exports.saveSettings = async (req, res) => {
     }
 };
 
-// Admin Omnibus Global Search (Searches Users, Files, Folders, and Payments)
+// Admin Omnibus Global Search (Searches Users, Files, Folders, Payments, and Activity Logs)
 exports.getGlobalSearch = async (req, res) => {
     try {
         const query = (req.query.q || '').trim();
@@ -477,53 +477,91 @@ exports.getGlobalSearch = async (req, res) => {
         let files = [];
         let folders = [];
         let payments = [];
+        let activityLogs = [];
+        let primaryUser = null;
+        let primaryUserFiles = [];
+        let primaryUserFolders = [];
+        let primaryUserPayments = [];
+        let primaryUserLogs = [];
 
         if (query) {
             const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
             const regex = new RegExp(escapedQuery, 'i');
 
-            // Run search queries concurrently with fault-tolerance
-            const [matchedUsers, matchedFiles, matchedFolders] = await Promise.all([
-                User.find({
-                    $or: [
-                        { full_name: regex },
-                        { email: regex },
-                        { role: regex }
-                    ]
-                }).populate('storage_plan').limit(20).catch(() => []),
-                File.find({
-                    original_name: regex,
-                    is_deleted: false
-                }).populate('user').populate('folder').limit(20).catch(() => []),
-                Folder.find({
-                    folder_name: regex,
-                    is_deleted: false
-                }).populate('user').limit(20).catch(() => [])
-            ]);
+            // 1. Search for matching users
+            const matchedUsers = await User.find({
+                $or: [
+                    { full_name: regex },
+                    { email: regex },
+                    { role: regex }
+                ]
+            }).populate('storage_plan').limit(20).catch(() => []);
 
             users = matchedUsers;
+            const matchedUserIds = users.map(u => u._id);
+
+            // 2. Fetch files, folders, payments, and activity logs
+            // Matching query text OR belonging to matched users
+            const [matchedFiles, matchedFolders, matchedPayments, matchedLogs] = await Promise.all([
+                File.find({
+                    $or: [
+                        { original_name: regex },
+                        ...(matchedUserIds.length > 0 ? [{ user: { $in: matchedUserIds } }] : [])
+                    ],
+                    is_deleted: false
+                }).populate('user').populate('folder').sort({ createdAt: -1 }).limit(50).catch(() => []),
+                Folder.find({
+                    $or: [
+                        { folder_name: regex },
+                        ...(matchedUserIds.length > 0 ? [{ user: { $in: matchedUserIds } }] : [])
+                    ],
+                    is_deleted: false
+                }).populate('user').sort({ createdAt: -1 }).limit(30).catch(() => []),
+                Payment.find({
+                    $or: [
+                        { transaction_id: regex },
+                        { payment_method: regex },
+                        { status: regex },
+                        ...(matchedUserIds.length > 0 ? [{ user: { $in: matchedUserIds } }] : [])
+                    ]
+                }).populate('user').populate('plan').sort({ payment_date: -1 }).limit(30).catch(() => []),
+                ActivityLog.find({
+                    $or: [
+                        { description: regex },
+                        { action_type: regex },
+                        ...(matchedUserIds.length > 0 ? [{ user: { $in: matchedUserIds } }] : [])
+                    ]
+                }).populate('user').sort({ createdAt: -1 }).limit(30).catch(() => [])
+            ]);
+
             files = matchedFiles;
             folders = matchedFolders;
+            payments = matchedPayments;
+            activityLogs = matchedLogs;
 
-            // Search Payments (transaction id, payment method, status, or matched user's payments)
-            const matchedUserIds = users.map(u => u._id);
-            payments = await Payment.find({
-                $or: [
-                    { transaction_id: regex },
-                    { payment_method: regex },
-                    { status: regex },
-                    { user: { $in: matchedUserIds } }
-                ]
-            }).populate('user').populate('plan').sort({ payment_date: -1 }).limit(20).catch(() => []);
+            // 3. User 360 View: If users were matched, select primaryUser to display comprehensive dossier
+            if (users.length > 0) {
+                primaryUser = users[0];
+                primaryUserFiles = files.filter(f => f.user && f.user._id.toString() === primaryUser._id.toString());
+                primaryUserFolders = folders.filter(fold => fold.user && fold.user._id.toString() === primaryUser._id.toString());
+                primaryUserPayments = payments.filter(p => p.user && p.user._id.toString() === primaryUser._id.toString());
+                primaryUserLogs = activityLogs.filter(l => l.user && l.user._id.toString() === primaryUser._id.toString());
+            }
         }
 
         res.render('admin/search', {
-            title: query ? `Admin Search: "${query}"` : 'Admin Global Search',
+            title: query ? `Admin Intelligence: "${query}"` : 'Admin Global Search',
             query,
             users,
             files,
             folders,
             payments,
+            activityLogs,
+            primaryUser,
+            primaryUserFiles,
+            primaryUserFolders,
+            primaryUserPayments,
+            primaryUserLogs,
             totalResults: users.length + files.length + folders.length + payments.length,
             formatBytes,
             timeAgo,
