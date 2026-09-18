@@ -209,16 +209,91 @@ exports.deleteUser = async (req, res) => {
     }
 };
 
-// Global File Inspector
+// Global File Inspector & Storage Analytics
 exports.getFiles = async (req, res) => {
     try {
+        const standardUsers = await User.find({ role: { $ne: 'admin' } }).populate('storage_plan');
         const files = await File.find().populate('user', 'full_name email').populate('folder', 'folder_name').sort({ createdAt: -1 });
-        const totalStorageBytes = files.filter(f => !f.is_deleted).reduce((acc, f) => acc + f.file_size, 0);
+
+        const activeFiles = files.filter(f => !f.is_deleted);
+        const totalFiles = activeFiles.length;
+        const totalUsers = standardUsers.length;
+
+        // Total Storage & Limits in MB
+        const totalStorageBytes = activeFiles.reduce((acc, f) => acc + (f.file_size || 0), 0);
+        const totalStorageMB = (totalStorageBytes / (1024 * 1024)).toFixed(2);
+
+        const totalLimitBytes = standardUsers.reduce((acc, u) => acc + (u.storage_limit_bytes || 524288000), 0);
+        const totalLimitMB = (totalLimitBytes / (1024 * 1024)).toFixed(2);
+
+        let storagePercentage = totalLimitBytes > 0 ? Math.round((totalStorageBytes / totalLimitBytes) * 100 * 10) / 10 : 0;
+        if (storagePercentage > 100) storagePercentage = 100;
+
+        // Active Uploaders & Today's Uploads
+        const uploaderIds = new Set(activeFiles.filter(f => f.user).map(f => f.user._id.toString()));
+        const totalUploaders = uploaderIds.size;
+
+        const startOfToday = new Date();
+        startOfToday.setHours(0, 0, 0, 0);
+        const todayUploads = activeFiles.filter(f => new Date(f.createdAt) >= startOfToday).length;
+
+        // Individual User Statistics
+        const userStatistics = standardUsers.map(u => {
+            const uFiles = activeFiles.filter(f => f.user && f.user._id.toString() === u._id.toString());
+            const uUsedBytes = uFiles.reduce((acc, f) => acc + (f.file_size || 0), 0);
+            const uLimitBytes = u.storage_limit_bytes || 524288000;
+            const uUsedMB = (uUsedBytes / (1024 * 1024)).toFixed(2);
+            const uLimitMB = (uLimitBytes / (1024 * 1024)).toFixed(2);
+            let uPercentage = uLimitBytes > 0 ? Math.round((uUsedBytes / uLimitBytes) * 100 * 10) / 10 : 0;
+            if (uPercentage > 100) uPercentage = 100;
+
+            const uToday = uFiles.filter(f => new Date(f.createdAt) >= startOfToday).length;
+
+            return {
+                id: u._id,
+                name: u.full_name,
+                email: u.email,
+                status: u.status || 'active',
+                files: uFiles.length,
+                used_mb: uUsedMB,
+                limit_mb: uLimitMB,
+                percentage: uPercentage,
+                today: uToday,
+                raw_used: uUsedBytes
+            };
+        }).sort((a, b) => b.raw_used - a.raw_used);
+
+        // Chart Data Arrays
+        const chartUsers = userStatistics.slice(0, 10);
+        const userNames = chartUsers.map(u => u.name);
+        const userFileCounts = chartUsers.map(u => u.files);
+        const userStorageData = chartUsers.map(u => parseFloat(u.used_mb));
+
+        // Monthly Uploads (Current Year Jan-Dec)
+        const currentYear = new Date().getFullYear();
+        const monthly = new Array(12).fill(0);
+        activeFiles.forEach(f => {
+            const d = new Date(f.createdAt);
+            if (d.getFullYear() === currentYear) {
+                monthly[d.getMonth()]++;
+            }
+        });
 
         res.render('admin/files', {
-            title: 'Global File Inspector',
-            files,
-            totalFiles: files.length,
+            title: 'File & Storage Analytics | File Management',
+            files: activeFiles,
+            totalUsers,
+            totalFiles,
+            totalStorageMB,
+            totalLimitMB,
+            storagePercentage,
+            todayUploads,
+            totalUploaders,
+            userStatistics,
+            userNames,
+            userFileCounts,
+            userStorageData,
+            monthlyData: monthly,
             totalStorageFormatted: formatBytes(totalStorageBytes),
             formatBytes,
             timeAgo,
