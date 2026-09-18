@@ -1,8 +1,6 @@
 <%- include('../partials/header') %>
 <%- include('../partials/admin_sidebar') %>
 
-<!-- CHART JS -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 /* =====================================================
@@ -379,49 +377,6 @@
             </div>
         </div>
 
-        <!-- =================================================
-             CHARTS ROW
-        ================================================= -->
-        <div class="row g-4 mt-1">
-            <!-- STORAGE -->
-            <div class="col-lg-4">
-                <div class="analytics-card">
-                    <div class="card-title-custom">
-                        <i class="bi bi-pie-chart-fill" style="color:#5eead4;"></i>
-                        Overall Storage
-                    </div>
-                    <div class="chart-container">
-                        <canvas id="storageChart"></canvas>
-                    </div>
-                </div>
-            </div>
-
-            <!-- USER FILES -->
-            <div class="col-lg-4">
-                <div class="analytics-card">
-                    <div class="card-title-custom">
-                        <i class="bi bi-bar-chart-fill" style="color:#60a5fa;"></i>
-                        Files by User
-                    </div>
-                    <div class="chart-container">
-                        <canvas id="userChart"></canvas>
-                    </div>
-                </div>
-            </div>
-
-            <!-- MONTHLY -->
-            <div class="col-lg-4">
-                <div class="analytics-card">
-                    <div class="card-title-custom">
-                        <i class="bi bi-graph-up" style="color:#fbbf24;"></i>
-                        Monthly Uploads
-                    </div>
-                    <div class="chart-container">
-                        <canvas id="monthChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <!-- =================================================
              INDIVIDUAL USER STATISTICS
@@ -665,127 +620,9 @@
 </div>
 
 <!-- =====================================================
-     JAVASCRIPT (CHARTS & SEARCH FILTERING)
+     JAVASCRIPT (SEARCH FILTERING)
 ===================================================== -->
 <script>
-/* CHART DATA */
-const userNames = <%- JSON.stringify(userNames) %>;
-const userFiles = <%- JSON.stringify(userFileCounts) %>;
-const userStorage = <%- JSON.stringify(userStorageData) %>;
-const monthlyData = <%- JSON.stringify(monthlyData) %>;
-
-/* CHART COLORS */
-Chart.defaults.color = "rgba(255,255,255,0.45)";
-const gridColor = "rgba(255,255,255,0.05)";
-
-/* STORAGE CHART */
-let usedStorage = <%= parseFloat(totalStorageMB) || 0 %>;
-let totalLimit = <%= parseFloat(totalLimitMB) || 1 %>;
-if (totalLimit <= 0) totalLimit = 1;
-let availableStorage = Math.max(totalLimit - usedStorage, 0);
-
-new Chart(document.getElementById("storageChart"), {
-    type: "doughnut",
-    data: {
-        labels: ["Used", "Available"],
-        datasets: [{
-            data: [usedStorage, availableStorage],
-            backgroundColor: ["#2dd4bf", "rgba(255,255,255,0.08)"],
-            borderWidth: 0
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        cutout: "70%",
-        plugins: {
-            legend: {
-                position: "bottom",
-                labels: {
-                    color: "rgba(255,255,255,0.55)",
-                    padding: 15
-                }
-            }
-        }
-    }
-});
-
-/* USER FILE CHART */
-new Chart(document.getElementById("userChart"), {
-    type: "bar",
-    data: {
-        labels: userNames,
-        datasets: [{
-            label: "Files",
-            data: userFiles,
-            backgroundColor: "rgba(45,212,191,0.65)",
-            borderColor: "#2dd4bf",
-            borderWidth: 1,
-            borderRadius: 6
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                labels: { color: "rgba(255,255,255,0.55)" }
-            }
-        },
-        scales: {
-            x: {
-                ticks: { color: "rgba(255,255,255,0.40)" },
-                grid: { color: gridColor }
-            },
-            y: {
-                beginAtZero: true,
-                ticks: { color: "rgba(255,255,255,0.40)", stepSize: 1 },
-                grid: { color: gridColor }
-            }
-        }
-    }
-});
-
-/* MONTHLY CHART */
-new Chart(document.getElementById("monthChart"), {
-    type: "line",
-    data: {
-        labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-        datasets: [{
-            label: "Uploads",
-            data: monthlyData,
-            borderWidth: 2,
-            tension: 0.4,
-            fill: true,
-            backgroundColor: "rgba(45,212,191,0.06)",
-            borderColor: "#2dd4bf",
-            pointBackgroundColor: "#5eead4",
-            pointBorderColor: "#080b12",
-            pointRadius: 4,
-            pointHoverRadius: 6
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                labels: { color: "rgba(255,255,255,0.55)" }
-            }
-        },
-        scales: {
-            x: {
-                ticks: { color: "rgba(255,255,255,0.40)" },
-                grid: { color: gridColor }
-            },
-            y: {
-                beginAtZero: true,
-                ticks: { color: "rgba(255,255,255,0.40)", stepSize: 1 },
-                grid: { color: gridColor }
-            }
-        }
-    }
-});
 
 /* USER SEARCH FILTER */
 document.getElementById("userSearch").addEventListener("keyup", function() {
