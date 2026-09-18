@@ -4,6 +4,7 @@
 
 const User = require('../models/User');
 const Notification = require('../models/Notification');
+const { formatBytes, timeAgo, getFileIcon } = require('./helpers');
 
 // Ensure user is authenticated
 const isAuth = (req, res, next) => {
@@ -32,6 +33,9 @@ const injectLocals = async (req, res, next) => {
     res.locals.user = null;
     res.locals.unreadNotifsCount = 0;
     res.locals.recentNotifs = [];
+    res.locals.formatBytes = formatBytes;
+    res.locals.timeAgo = timeAgo;
+    res.locals.getFileIcon = getFileIcon;
 
     if (req.session && req.session.userId) {
         try {

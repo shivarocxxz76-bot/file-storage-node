@@ -115,15 +115,10 @@ exports.postRegister = async (req, res) => {
             storage_limit_bytes: freePlan ? freePlan.storage_bytes : 524288000
         });
 
-        req.session.userId = newUser._id.toString();
-        req.session.userRole = newUser.role;
-        req.session.userName = newUser.full_name;
-        req.session.userEmail = newUser.email;
-
         await logActivity(req, newUser._id, 'REGISTER', 'Created new account with 500MB Free Starter quota', 'auth', newUser._id);
 
-        req.flash('success', 'Registration successful! Your 500MB secure cloud workspace is active.');
-        res.redirect('/dashboard');
+        req.flash('success', 'Registration successful! Please sign in with your email and password.');
+        res.redirect('/auth/login');
     } catch (err) {
         console.error('Register error:', err);
         req.flash('danger', 'Registration failed. Please try again.');

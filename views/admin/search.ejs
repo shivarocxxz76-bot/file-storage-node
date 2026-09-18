@@ -80,7 +80,7 @@
                                         <td><span class="badge bg-<%= u.role === 'admin' ? 'purple' : 'primary' %>-subtle text-<%= u.role === 'admin' ? 'purple' : 'primary' %>"><%= u.role %></span></td>
                                         <td><span class="badge bg-secondary-subtle text-secondary"><%= u.storage_plan ? u.storage_plan.plan_name : 'Free Starter' %></span></td>
                                         <td><span class="badge bg-<%= u.status === 'active' ? 'success' : 'danger' %>"><%= u.status %></span></td>
-                                        <td class="small text-muted"><%= formatBytes(u.storage_used_bytes) %></td>
+                                        <td class="small text-muted"><%= formatBytes(u.storage_used_bytes || 0) %></td>
                                         <td class="text-end">
                                             <a href="/admin/users" class="btn btn-sm btn-outline-primary py-0 px-2"><i class="bi bi-gear me-1"></i>Manage</a>
                                         </td>
@@ -110,7 +110,7 @@
                             </thead>
                             <tbody>
                                 <% files.forEach(f => { 
-                                    const iconData = getFileIcon(f.file_extension);
+                                    const iconData = getFileIcon(f.file_extension || '');
                                 %>
                                     <tr>
                                         <td>
@@ -125,8 +125,8 @@
                                             <span class="badge bg-primary-subtle text-primary"><%= f.user ? f.user.full_name : 'Unknown' %></span>
                                         </td>
                                         <td><span class="text-muted small"><%= f.folder ? f.folder.folder_name : 'Root' %></span></td>
-                                        <td class="small text-muted"><%= formatBytes(f.file_size) %></td>
-                                        <td class="small text-muted"><%= timeAgo(f.createdAt) %></td>
+                                        <td class="small text-muted"><%= formatBytes(f.file_size || 0) %></td>
+                                        <td class="small text-muted"><%= timeAgo(f.createdAt || new Date()) %></td>
                                         <td class="text-end">
                                             <a href="/files/download?file_id=<%= f._id %>" class="btn btn-sm btn-outline-secondary py-0 px-2" title="Download Decrypted"><i class="bi bi-download"></i></a>
                                         </td>
@@ -153,7 +153,7 @@
                                             <div class="text-muted" style="font-size: 0.72rem;">Owner: <%= fold.user ? fold.user.full_name : 'System' %></div>
                                         </div>
                                     </div>
-                                    <span class="badge bg-body-secondary text-muted small"><%= timeAgo(fold.createdAt) %></span>
+                                    <span class="badge bg-body-secondary text-muted small"><%= timeAgo(fold.createdAt || new Date()) %></span>
                                 </div>
                             </div>
                         <% }) %>
@@ -187,10 +187,10 @@
                                             <div class="text-muted" style="font-size: 0.72rem;"><%= p.user ? p.user.email : '' %></div>
                                         </td>
                                         <td><span class="badge bg-secondary-subtle text-secondary"><%= p.plan ? p.plan.plan_name : 'Storage Quota' %></span></td>
-                                        <td class="fw-bold text-success">$<%= p.amount.toFixed(2) %></td>
+                                        <td class="fw-bold text-success">$<%= (p.amount != null ? Number(p.amount) : 0).toFixed(2) %></td>
                                         <td><span class="badge bg-body-secondary text-capitalize"><%= p.payment_method %></span></td>
                                         <td><span class="badge bg-<%= p.status === 'completed' ? 'success' : (p.status === 'failed' ? 'danger' : 'warning') %>"><%= p.status %></span></td>
-                                        <td class="small text-muted"><%= timeAgo(p.payment_date) %></td>
+                                        <td class="small text-muted"><%= timeAgo(p.payment_date || p.createdAt || new Date()) %></td>
                                     </tr>
                                 <% }) %>
                             </tbody>

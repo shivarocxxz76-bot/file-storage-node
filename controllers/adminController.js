@@ -479,30 +479,33 @@ exports.getGlobalSearch = async (req, res) => {
         let payments = [];
 
         if (query) {
-            const regex = new RegExp(query, 'i');
+            const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const regex = new RegExp(escapedQuery, 'i');
 
-            // 1. Search Users (name, email, role)
-            users = await User.find({
-                $or: [
-                    { full_name: regex },
-                    { email: regex },
-                    { role: regex }
-                ]
-            }).populate('storage_plan').limit(20);
+            // Run search queries concurrently with fault-tolerance
+            const [matchedUsers, matchedFiles, matchedFolders] = await Promise.all([
+                User.find({
+                    $or: [
+                        { full_name: regex },
+                        { email: regex },
+                        { role: regex }
+                    ]
+                }).populate('storage_plan').limit(20).catch(() => []),
+                File.find({
+                    original_name: regex,
+                    is_deleted: false
+                }).populate('user').populate('folder').limit(20).catch(() => []),
+                Folder.find({
+                    folder_name: regex,
+                    is_deleted: false
+                }).populate('user').limit(20).catch(() => [])
+            ]);
 
-            // 2. Search Files (file name, extension, mime_type)
-            files = await File.find({
-                original_name: regex,
-                is_deleted: false
-            }).populate('user').populate('folder').limit(20);
+            users = matchedUsers;
+            files = matchedFiles;
+            folders = matchedFolders;
 
-            // 3. Search Folders (folder name)
-            folders = await Folder.find({
-                folder_name: regex,
-                is_deleted: false
-            }).populate('user').limit(20);
-
-            // 4. Search Payments (transaction id, payment method, status, or matched user's payments)
+            // Search Payments (transaction id, payment method, status, or matched user's payments)
             const matchedUserIds = users.map(u => u._id);
             payments = await Payment.find({
                 $or: [
@@ -511,7 +514,7 @@ exports.getGlobalSearch = async (req, res) => {
                     { status: regex },
                     { user: { $in: matchedUserIds } }
                 ]
-            }).populate('user').populate('plan').sort({ payment_date: -1 }).limit(20);
+            }).populate('user').populate('plan').sort({ payment_date: -1 }).limit(20).catch(() => []);
         }
 
         res.render('admin/search', {
@@ -521,11 +524,14 @@ exports.getGlobalSearch = async (req, res) => {
             files,
             folders,
             payments,
-            totalResults: users.length + files.length + folders.length + payments.length
+            totalResults: users.length + files.length + folders.length + payments.length,
+            formatBytes,
+            timeAgo,
+            getFileIcon
         });
     } catch (err) {
         console.error('Admin global search error:', err);
-        req.flash('danger', 'Error executing global search.');
+        req.flash('danger', 'Error executing global search: ' + err.message);
         res.redirect('/admin/dashboard');
     }
 };
@@ -538,13 +544,14 @@ exports.apiGlobalSearch = async (req, res) => {
             return res.json({ success: true, results: { users: [], files: [], folders: [], payments: [] } });
         }
 
-        const regex = new RegExp(query, 'i');
+        const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const regex = new RegExp(escapedQuery, 'i');
 
         const [users, files, folders, payments] = await Promise.all([
-            User.find({ $or: [{ full_name: regex }, { email: regex }] }).select('full_name email role').limit(5),
-            File.find({ original_name: regex, is_deleted: false }).populate('user', 'full_name').select('original_name file_size file_extension user').limit(5),
-            Folder.find({ folder_name: regex, is_deleted: false }).populate('user', 'full_name').select('folder_name color_code user').limit(5),
-            Payment.find({ $or: [{ transaction_id: regex }, { payment_method: regex }] }).populate('user', 'full_name').select('transaction_id amount status payment_date user').limit(5)
+            User.find({ $or: [{ full_name: regex }, { email: regex }] }).select('full_name email role').limit(5).catch(() => []),
+            File.find({ original_name: regex, is_deleted: false }).populate('user', 'full_name').select('original_name file_size file_extension user').limit(5).catch(() => []),
+            Folder.find({ folder_name: regex, is_deleted: false }).populate('user', 'full_name').select('folder_name color_code user').limit(5).catch(() => []),
+            Payment.find({ $or: [{ transaction_id: regex }, { payment_method: regex }] }).populate('user', 'full_name').select('transaction_id amount status payment_date user').limit(5).catch(() => [])
         ]);
 
         res.json({
