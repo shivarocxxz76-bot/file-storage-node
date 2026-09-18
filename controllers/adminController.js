@@ -98,7 +98,8 @@ exports.getDashboard = async (req, res) => {
 // Manage Users
 exports.getUsers = async (req, res) => {
     try {
-        const users = await User.find().populate('storage_plan').sort({ createdAt: -1 });
+        const adminId = req.session.userId;
+        const users = await User.find({ _id: { $ne: adminId } }).populate('storage_plan').sort({ createdAt: -1 });
         const plans = await StoragePlan.find({ is_active: true }).sort({ price: 1 });
 
         const userList = await Promise.all(users.map(async u => {
