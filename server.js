@@ -52,6 +52,19 @@ app.use(injectLocals);
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
+// PWA Service Worker & Web App Manifest Handlers
+app.get('/sw.js', (req, res) => {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Content-Type', 'application/javascript');
+    res.setHeader('Service-Worker-Allowed', '/');
+    res.sendFile(path.join(__dirname, 'public', 'sw.js'));
+});
+
+app.get('/manifest.json', (req, res) => {
+    res.setHeader('Content-Type', 'application/manifest+json');
+    res.sendFile(path.join(__dirname, 'public', 'manifest.json'));
+});
+
 // Static Folders
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads/avatars', express.static(path.join(__dirname, 'secure_storage/avatars')));

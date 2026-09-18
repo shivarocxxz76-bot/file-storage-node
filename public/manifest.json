@@ -1,21 +1,38 @@
 {
-  "name": "SecureVault - Cloud Storage",
+  "name": "SecureVault Cloud",
   "short_name": "SecureVault",
   "description": "AES-256 Encrypted Secure Cloud File Storage & Access Management Platform",
-  "start_url": "/dashboard",
+  "start_url": "/",
+  "id": "/",
+  "scope": "/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "background_color": "#060913",
-  "theme_color": "#4f46e5",
-  "orientation": "portrait",
+  "theme_color": "#06b6d4",
+  "orientation": "any",
+  "categories": ["productivity", "security", "utilities"],
   "icons": [
     {
       "src": "/images/icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/images/icon-512.png",
       "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/images/apple-touch-icon.png",
+      "sizes": "180x180",
       "type": "image/png"
     }
   ]

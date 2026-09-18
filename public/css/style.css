@@ -819,3 +819,45 @@ code, pre, .font-monospace {
     }
 }
 
+/* ---------------- PWA Install Banner & Sheets ---------------- */
+.pwa-install-banner {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 1080;
+    background: rgba(13, 20, 36, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(6, 182, 212, 0.4);
+    border-radius: 16px;
+    padding: 0.85rem 1.25rem;
+    max-width: 440px;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6), 0 0 20px rgba(6, 182, 212, 0.2);
+}
+
+.ios-pwa-sheet {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 92%;
+    max-width: 380px;
+    z-index: 1090;
+    background: rgba(13, 20, 36, 0.96);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(6, 182, 212, 0.4);
+    border-radius: 20px;
+    padding: 1.25rem;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
+}
+
+@media (max-width: 575.98px) {
+    .pwa-install-banner {
+        bottom: 78px; /* sits cleanly above mobile bottom nav */
+        left: 14px;
+        right: 14px;
+        max-width: none;
+    }
+}
+
