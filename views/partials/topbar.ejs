@@ -6,7 +6,7 @@
         </button>
 
         <!-- Global Search Box -->
-        <% if (user && user.role === 'admin') { %>
+        <% if (typeof currentUrl !== 'undefined' && currentUrl && currentUrl.startsWith('/admin')) { %>
             <form action="/admin/search" method="GET" class="d-none d-md-flex" style="max-width: 380px;">
                 <div class="input-group">
                     <span class="input-group-text bg-body-secondary border-end-0 text-muted">
@@ -91,18 +91,12 @@
                         <div class="text-muted small"><%= user.email %></div>
                     </li>
                     <% if (typeof currentUrl !== 'undefined' && currentUrl && currentUrl.startsWith('/admin')) { %>
-                        <!-- In Admin Panel: "My Profile" removed -->
-                        <li><a class="dropdown-item py-2 text-primary" href="/dashboard"><i class="bi bi-person-workspace me-2"></i> User Portal</a></li>
                         <li><a class="dropdown-item py-2" href="/admin/settings"><i class="bi bi-sliders me-2 text-secondary"></i> System Settings</a></li>
                         <li><a class="dropdown-item py-2" href="/admin/logs"><i class="bi bi-shield-lock me-2 text-info"></i> Audit Logs</a></li>
                     <% } else { %>
                         <li><a class="dropdown-item py-2" href="/profile"><i class="bi bi-person me-2 text-primary"></i> My Profile</a></li>
                         <li><a class="dropdown-item py-2" href="/activity-logs"><i class="bi bi-shield-check me-2 text-success"></i> Security Logs</a></li>
                         <li><a class="dropdown-item py-2" href="/storage-plans"><i class="bi bi-hdd-network me-2 text-warning"></i> Upgrade Storage</a></li>
-                        <% if (user.role === 'admin') { %>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item py-2 text-purple fw-semibold" href="/admin/dashboard"><i class="bi bi-speedometer2 me-2"></i> Admin Panel</a></li>
-                        <% } %>
                     <% } %>
                     <li><hr class="dropdown-divider"></li>
                     <li><a class="dropdown-item py-2 text-info pwa-install-btn d-none" href="javascript:void(0)" onclick="triggerPwaInstall()"><i class="bi bi-phone me-2"></i> Install App</a></li>
