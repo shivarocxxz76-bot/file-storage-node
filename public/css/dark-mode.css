@@ -30,6 +30,18 @@ body.bg-body-tertiary,
     color: #f8fafc !important;
 }
 
+/* Auth Pages (Login & Register) - Glowing Cyber Padlock fully visible */
+body.auth-page,
+body.auth-page.bg-dark,
+[data-bs-theme="dark"] body.auth-page,
+[data-bs-theme="light"] body.auth-page {
+    background: radial-gradient(circle at 35% 50%, rgba(6, 10, 22, 0.10) 0%, rgba(6, 10, 22, 0.45) 60%, rgba(4, 7, 16, 0.75) 100%),
+                url('/images/cyber-lock.jpg') no-repeat center center fixed !important;
+    background-size: cover !important;
+    background-position: center center !important;
+    background-attachment: fixed !important;
+}
+
 /* Headings contrast protection */
 h1, h2, h3, h4, h5, h6,
 .h1, .h2, .h3, .h4, .h5, .h6,

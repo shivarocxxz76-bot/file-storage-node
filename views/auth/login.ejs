@@ -20,8 +20,36 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="/css/dark-mode.css">
+    <style>
+        body.auth-page,
+        .split-auth-layout {
+            background: radial-gradient(circle at 35% 50%, rgba(6, 10, 22, 0.08) 0%, rgba(6, 10, 22, 0.45) 60%, rgba(4, 7, 16, 0.78) 100%),
+                        url('/images/cyber-lock.jpg') no-repeat center center fixed !important;
+            background-size: cover !important;
+            background-position: center center !important;
+            background-attachment: fixed !important;
+            min-height: 100vh;
+        }
+        .split-auth-hero {
+            background: transparent !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+        }
+        .split-auth-form-side {
+            background: rgba(6, 10, 22, 0.20) !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+        }
+        .split-auth-form-container {
+            background: rgba(10, 16, 32, 0.75) !important;
+            backdrop-filter: blur(18px) !important;
+            -webkit-backdrop-filter: blur(18px) !important;
+            border: 1px solid rgba(6, 182, 212, 0.30) !important;
+            box-shadow: 0 16px 45px rgba(0, 0, 0, 0.7), 0 0 35px rgba(6, 182, 212, 0.15) !important;
+        }
+    </style>
 </head>
-<body class="bg-dark">
+<body class="auth-page">
 
 <div class="split-auth-layout">
     <!-- Left Hero Brand Column -->
