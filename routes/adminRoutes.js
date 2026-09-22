@@ -34,8 +34,10 @@ router.post('/support/status', isAdmin, adminController.updateTicketStatus);
 router.post('/support/update-status', isAdmin, adminController.updateTicketStatus);
 router.post('/support/reply', isAdmin, supportController.postReply);
 
-// System Logs
+// System Logs & Compliance Export
 router.get('/logs', isAdmin, adminController.getLogs);
+router.get('/logs/export/csv', isAdmin, adminController.exportLogsCSV);
+router.get('/logs/export/report', isAdmin, adminController.exportLogsReport);
 
 // Settings
 router.get('/settings', isAdmin, adminController.getSettings);
