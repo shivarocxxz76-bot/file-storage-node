@@ -36,7 +36,7 @@
                                 else if (t.status === 'resolved') statusClass = 'bg-success-subtle text-success';
                                 else if (t.status === 'closed') statusClass = 'bg-secondary-subtle text-secondary';
                             %>
-                                <a href="/support?ticket_id Antonio=<%= t._id %>" href="/support?ticket_id=<%= t._id %>" class="list-group-item list-group-item-action p-3 rounded mb-2 <%= isSelected ? 'border-primary bg-primary-subtle bg-opacity-25' : 'border' %>">
+                                <a href="/support?ticket_id=<%= t._id %>" class="list-group-item list-group-item-action p-3 rounded mb-2 <%= isSelected ? 'border-primary bg-primary-subtle bg-opacity-25' : 'border' %>">
                                     <div class="d-flex justify-content-between align-items-start mb-1">
                                         <h6 class="fw-bold mb-0 text-truncate" style="max-width: 170px;"><%= t.subject %></h6>
                                         <span class="badge <%= statusClass %> text-capitalize" style="font-size: 0.68rem;"><%= t.status.replace('_', ' ') %></span>

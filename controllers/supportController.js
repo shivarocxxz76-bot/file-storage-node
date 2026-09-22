@@ -2,6 +2,8 @@
  * Helpdesk & Support Controller
  */
 
+const mongoose = require('mongoose');
+const User = require('../models/User');
 const SupportTicket = require('../models/SupportTicket');
 const SupportReply = require('../models/SupportReply');
 const { logActivity, createNotification } = require('../middleware/activityLogger');
@@ -16,16 +18,22 @@ exports.getSupport = async (req, res) => {
         let activeTicket = null;
         let ticketReplies = [];
 
-        if (ticketId) {
+        const myTickets = await SupportTicket.find({ user: userId }).sort({ createdAt: -1 });
+
+        if (ticketId && mongoose.Types.ObjectId.isValid(ticketId)) {
             activeTicket = await SupportTicket.findOne({ _id: ticketId, user: userId });
-            if (activeTicket) {
-                ticketReplies = await SupportReply.find({ ticket: activeTicket._id })
-                    .populate('user', 'full_name role')
-                    .sort({ createdAt: 1 });
-            }
         }
 
-        const myTickets = await SupportTicket.find({ user: userId }).sort({ createdAt: -1 });
+        // If no specific ticket chosen or found, auto-select the latest ticket
+        if (!activeTicket && myTickets.length > 0 && !ticketId) {
+            activeTicket = myTickets[0];
+        }
+
+        if (activeTicket) {
+            ticketReplies = await SupportReply.find({ ticket: activeTicket._id })
+                .populate('user', 'full_name role')
+                .sort({ createdAt: 1 });
+        }
 
         res.render('user/support', {
             title: 'Helpdesk & Support',
@@ -47,7 +55,7 @@ exports.createTicket = async (req, res) => {
         const { subject, priority, message } = req.body;
         const userId = req.session.userId;
 
-        if (!subject || !message) {
+        if (!subject || !subject.trim() || !message || !message.trim()) {
             req.flash('danger', 'Please provide a subject and message description.');
             return res.redirect('/support');
         }
@@ -66,7 +74,19 @@ exports.createTicket = async (req, res) => {
             is_admin_reply: false
         });
 
-        await logActivity(req, userId, 'CREATE_TICKET', `Created support ticket: ${subject}`, 'system', ticket._id);
+        // Notify administrators about the new ticket
+        const admins = await User.find({ role: 'admin' });
+        for (const adm of admins) {
+            await createNotification(
+                adm._id,
+                'New Support Ticket',
+                `A new support ticket was opened: "${subject.trim()}"`,
+                'info',
+                `/admin/support?ticket_id=${ticket._id}`
+            );
+        }
+
+        await logActivity(req, userId, 'CREATE_TICKET', `Created support ticket: ${subject.trim()}`, 'system', ticket._id);
         req.flash('success', 'Support ticket submitted. Our team will review it shortly.');
         res.redirect(`/support?ticket_id=${ticket._id}`);
     } catch (err) {
@@ -78,14 +98,20 @@ exports.createTicket = async (req, res) => {
 
 // Post Reply to Ticket
 exports.postReply = async (req, res) => {
+    const isAdmin = req.session.userRole === 'admin';
+    const redirectBase = isAdmin ? '/admin/support' : '/support';
     try {
         const { ticket_id, message } = req.body;
         const userId = req.session.userId;
-        const isAdmin = req.session.userRole === 'admin';
+
+        if (!ticket_id || !mongoose.Types.ObjectId.isValid(ticket_id)) {
+            req.flash('danger', 'Invalid ticket reference.');
+            return res.redirect(redirectBase);
+        }
 
         if (!message || !message.trim()) {
             req.flash('danger', 'Reply message cannot be blank.');
-            return res.redirect(`/support?ticket_id=${ticket_id}`);
+            return res.redirect(`${redirectBase}?ticket_id=${ticket_id}`);
         }
 
         const query = isAdmin ? { _id: ticket_id } : { _id: ticket_id, user: userId };
@@ -93,7 +119,7 @@ exports.postReply = async (req, res) => {
 
         if (!ticket) {
             req.flash('danger', 'Ticket not found or permission denied.');
-            return res.redirect('/support');
+            return res.redirect(redirectBase);
         }
 
         await SupportReply.create({
@@ -114,16 +140,33 @@ exports.postReply = async (req, res) => {
                 'info',
                 `/support?ticket_id=${ticket._id}`
             );
+        } else {
+            // If user replied to a resolved ticket, reopen it
+            if (ticket.status === 'resolved') {
+                ticket.status = 'open';
+                await ticket.save();
+            }
+
+            // Notify administrators of the user reply
+            const admins = await User.find({ role: 'admin' });
+            for (const adm of admins) {
+                await createNotification(
+                    adm._id,
+                    'Ticket Reply',
+                    `User replied on ticket: "${ticket.subject}"`,
+                    'info',
+                    `/admin/support?ticket_id=${ticket._id}`
+                );
+            }
         }
 
         await logActivity(req, userId, 'TICKET_REPLY', `Replied to support ticket #${ticket._id}`, 'system', ticket._id);
         req.flash('success', 'Reply posted successfully.');
 
-        const redirectUrl = isAdmin ? `/admin/support?ticket_id=${ticket._id}` : `/support?ticket_id=${ticket._id}`;
-        res.redirect(redirectUrl);
+        res.redirect(`${redirectBase}?ticket_id=${ticket._id}`);
     } catch (err) {
         console.error('Reply error:', err);
         req.flash('danger', 'Failed to send reply.');
-        res.redirect('/support');
+        res.redirect(redirectBase);
     }
 };

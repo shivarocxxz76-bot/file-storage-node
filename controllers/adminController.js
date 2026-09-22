@@ -5,6 +5,7 @@
 
 const path = require('path');
 const fs = require('fs');
+const mongoose = require('mongoose');
 const User = require('../models/User');
 const File = require('../models/File');
 const Folder = require('../models/Folder');
@@ -432,16 +433,22 @@ exports.getSupport = async (req, res) => {
         let activeTicket = null;
         let ticketReplies = [];
 
-        if (ticketId) {
+        const allTickets = await SupportTicket.find().populate('user', 'full_name email').sort({ createdAt: -1 });
+
+        if (ticketId && mongoose.Types.ObjectId.isValid(ticketId)) {
             activeTicket = await SupportTicket.findById(ticketId).populate('user', 'full_name email');
-            if (activeTicket) {
-                ticketReplies = await SupportReply.find({ ticket: activeTicket._id })
-                    .populate('user', 'full_name role')
-                    .sort({ createdAt: 1 });
-            }
         }
 
-        const allTickets = await SupportTicket.find().populate('user', 'full_name email').sort({ createdAt: -1 });
+        // If no specific ticket requested, auto-select the latest one
+        if (!activeTicket && allTickets.length > 0 && !ticketId) {
+            activeTicket = allTickets[0];
+        }
+
+        if (activeTicket) {
+            ticketReplies = await SupportReply.find({ ticket: activeTicket._id })
+                .populate('user', 'full_name role')
+                .sort({ createdAt: 1 });
+        }
 
         res.render('admin/support', {
             title: 'Helpdesk Management',
@@ -452,6 +459,7 @@ exports.getSupport = async (req, res) => {
         });
     } catch (err) {
         console.error('Admin support error:', err);
+        req.flash('danger', 'Error loading helpdesk tickets.');
         res.redirect('/admin/dashboard');
     }
 };
@@ -462,11 +470,25 @@ exports.updateTicketStatus = async (req, res) => {
         const { ticket_id, status } = req.body;
         const adminId = req.session.userId;
 
-        await SupportTicket.findByIdAndUpdate(ticket_id, { status });
-        await logActivity(req, adminId, 'ADMIN_TICKET_STATUS', `Changed ticket #${ticket_id} status to ${status}`, 'system', ticket_id);
+        if (ticket_id && mongoose.Types.ObjectId.isValid(ticket_id) && ['open', 'in_progress', 'resolved', 'closed'].includes(status)) {
+            const ticket = await SupportTicket.findByIdAndUpdate(ticket_id, { status }, { new: true });
+            if (ticket) {
+                await logActivity(req, adminId, 'ADMIN_TICKET_STATUS', `Changed ticket #${ticket_id} status to ${status}`, 'system', ticket_id);
 
-        req.flash('success', `Ticket marked as ${status}.`);
-        res.redirect(`/admin/support?ticket_id=${ticket_id}`);
+                await createNotification(
+                    ticket.user,
+                    'Ticket Status Update',
+                    `Your support ticket "${ticket.subject}" has been marked as ${status.replace('_', ' ')}.`,
+                    'info',
+                    `/support?ticket_id=${ticket._id}`
+                );
+            }
+            req.flash('success', `Ticket status updated to ${status.replace('_', ' ')}.`);
+            return res.redirect(`/admin/support?ticket_id=${ticket_id}`);
+        }
+
+        req.flash('warning', 'Invalid ticket or status value.');
+        res.redirect('/admin/support');
     } catch (err) {
         console.error('Ticket status update error:', err);
         req.flash('danger', 'Failed to update ticket status.');

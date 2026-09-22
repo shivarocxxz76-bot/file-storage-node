@@ -5,6 +5,7 @@
 const express = require('express');
 const router = express.Router();
 const adminController = require('../controllers/adminController');
+const supportController = require('../controllers/supportController');
 const { isAdmin } = require('../middleware/auth');
 
 // Admin Analytics Dashboard
@@ -29,7 +30,9 @@ router.get('/payments', isAdmin, adminController.getPayments);
 
 // Helpdesk
 router.get('/support', isAdmin, adminController.getSupport);
+router.post('/support/status', isAdmin, adminController.updateTicketStatus);
 router.post('/support/update-status', isAdmin, adminController.updateTicketStatus);
+router.post('/support/reply', isAdmin, supportController.postReply);
 
 // System Logs
 router.get('/logs', isAdmin, adminController.getLogs);
