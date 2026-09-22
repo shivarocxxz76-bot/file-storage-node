@@ -5,3 +5,6 @@ secure_storage/avatars/*
 secure_storage/files/*
 !secure_storage/files/.gitkeep
 *.log
+
+data/db/*
+!data/db/.gitkeep
